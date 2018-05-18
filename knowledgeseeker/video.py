@@ -130,6 +130,7 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
                                    '-f', 'gif'],
                       stdin=palette)
 
+"""
 def make_preview(video_path, start_timecode, end_timecode):
     duration = end_timecode - start_timecode
     args = ['-ss', str(start_timecode), '-i', video_path, '-t', str(duration),
@@ -140,6 +141,7 @@ def make_preview(video_path, start_timecode, end_timecode):
         return ffmpeg.stdout
     else:
         raise FfmpegRuntimeError
+"""
 
 def run_ffmpeg(inputs, output_args, stdin=None):
     args = (sum([input_args + ['-i', input_file] for input_args, input_file in inputs], []) +
