@@ -4,6 +4,7 @@ import re
 import subprocess
 from pathlib import Path
 
+from . import cache
 from .video import (Timecode,
                     make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles)
@@ -54,6 +55,7 @@ def snapshot_with_subtitles(season, episode, timecode):
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
+@cache.cached(timeout=None)
 def gif(season, episode, start_timecode, end_timecode):
     # Find episode
     matched_episode = find_episode(season, episode)
@@ -80,6 +82,7 @@ def gif(season, episode, start_timecode, end_timecode):
     return response
 
 #@bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
+@cache.cached(timeout=None)
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     # Find episode
     matched_episode = find_episode(season, episode)
