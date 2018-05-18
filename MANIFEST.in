@@ -1,0 +1,3 @@
+graft knowledgeseeker/static
+graft knowledgeseeker/templates
+global-exclude *.pyc
