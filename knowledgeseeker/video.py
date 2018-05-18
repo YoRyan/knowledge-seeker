@@ -131,10 +131,10 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
 def make_webm(video_path, start_timecode, end_timecode, vres=360):
     duration = end_timecode - start_timecode
     inputs = [(['-ss', str(start_timecode)], str(video_path.absolute()))]
-    return run_ffmpeg(inputs, ['-t', str(duration),
+    return run_ffmpeg(inputs, ['-t', str(duration), '-an', '-sn',
                                '-filter_complex', 'scale=-1:%d' % vres,
                                '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
-                               '-cpu-used', '2', '-an', '-f', 'webm'])
+                               '-cpu-used', '2', '-f', 'webm'])
 
 def make_webm_with_subtitles(video_path, subtitle_path, start_timecode, end_timecode,
                              vres=360, fonts_path=None, font=None):
@@ -152,9 +152,10 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_timecode, end_time
     # Create the webm
     inputs = [(['-ss', str(start_timecode)], str(video_path.absolute()))]
     webm_filter = 'scale=-1:%d,%s' % (vres, subtitles_filter)
-    return run_ffmpeg(inputs, ['-t', str(duration), '-filter_complex', webm_filter,
+    return run_ffmpeg(inputs, ['-t', str(duration), '-an', '-sn',
+                               '-filter_complex', webm_filter,
                                '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
-                               '-cpu-used', '2', '-an', '-f', 'webm'])
+                               '-cpu-used', '2', '-f', 'webm'])
 
 """
 def make_preview(video_path, start_timecode, end_timecode):
