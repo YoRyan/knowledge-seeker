@@ -5,9 +5,13 @@ from pathlib import Path
 from .library import load_library_file
 from .video import run_ffmpeg
 
+DEFAULT_CONFIG = { 'LIBRARY': 'library/atla.json',
+                   'SUBTITLES_FONTSDIR': 'library/',
+                   'SUBTITLES_FONT': 'Herculanum' }
+
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(SECRET_key='dev')
+    app.config.from_mapping(DEFAULT_CONFIG)
 
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
