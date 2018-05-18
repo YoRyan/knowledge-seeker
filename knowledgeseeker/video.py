@@ -68,16 +68,16 @@ def make_snapshot_with_subtitles(video_path, subtitle_path, timecode,
     inputs = [(['-ss', str(timecode)], str(video_path.absolute()))]
 
     # Filter for subtitles
-    subtitles_filter = 'subtitles=\'%s\'' % str(subtitle_path.absolute())
+    subtitles_filter = 'setpts=PTS+%f/TB,subtitles=\'%s\'' % (timecode.seconds(),
+                                                              str(subtitle_path.absolute()))
     if font is not None:
         subtitles_filter += ':force_style=\'FontName=%s\'' % font
         if fonts_path is not None:
             subtitles_filter += ':fontsdir=%s' % fonts_path
+    subtitles_filter += ',setpts=PTS-STARTPTS'
 
-    ff_filter = ('setpts=PTS+%f/TB,%s,setpts=PTS-STARTPTS' %
-                 (timecode.seconds(), subtitles_filter))
     return run_ffmpeg(inputs, ['-vframes', '1', '-f', 'singlejpeg', '-q:v', '1',
-                               '-filter_complex', ff_filter])
+                               '-filter_complex', subtitles_filter])
 
 def make_gif(video_path, start_timecode, end_timecode, vres=360):
     duration = end_timecode - start_timecode
@@ -91,8 +91,8 @@ def make_gif(video_path, start_timecode, end_timecode, vres=360):
     # Create the actual jif
     gif_inputs = [(['-ss', str(start_timecode)], str(video_path.absolute())),
                   (['-f', 'png_pipe'], '-')]
-    gif_filter = ('scale=-1:%d:' % vres +
-                  'lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle')
+    gif_filter = ('scale=-1:%d:lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle' %
+                  vres)
     return run_ffmpeg(gif_inputs, ['-t', str(duration),
                                    '-filter_complex', gif_filter, '-f', 'gif'],
                       stdin=palette)
@@ -102,7 +102,8 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
     duration = end_timecode - start_timecode
 
     # Filter for subtitles
-    subtitles_filter = 'subtitles=\'%s\'' % str(subtitle_path.absolute())
+    subtitles_filter = 'setpts=PTS+%f/TB,subtitles=\'%s\'' % (start_timecode.seconds(),
+                                                              str(subtitle_path.absolute()))
     if font is not None:
         subtitles_filter += ':force_style=\'FontName=%s\'' % font
         if fonts_path is not None:
@@ -112,9 +113,8 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
     # Get color palette for the highest quality
     palette_inputs = [(['-ss', str(start_timecode), '-t', str(duration.seconds())],
                        str(video_path.absolute()))]
-    palette_filter = ('scale=-1:%d:' % vres +
-                      'lanczos,palettegen=stats_mode=full,setpts=PTS+%f/TB,%s' %
-                      (start_timecode.seconds(), subtitles_filter))
+    palette_filter = ('scale=-1:%d:lanczos,palettegen=stats_mode=full,' % vres +
+                      subtitles_filter)
 
     palette = run_ffmpeg(palette_inputs, ['-filter_complex', palette_filter,
                                           '-f', 'apng'])
@@ -122,10 +122,8 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
     # Create the actual jif
     gif_inputs = [(['-ss', str(start_timecode)], str(video_path.absolute())),
                   (['-f', 'png_pipe'], '-')]
-    gif_filter = ('scale=-1:%d:' % vres +
-                  'lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle,' +
-                  'setpts=PTS+%f/TB,%s,setpts=PTS-STARTPTS' %
-                  (start_timecode.seconds(), subtitles_filter))
+    gif_filter = ('scale=-1:%d:lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle,' %
+                  vres + subtitles_filter)
     return run_ffmpeg(gif_inputs, ['-t', str(duration), '-filter_complex', gif_filter,
                                    '-f', 'gif'],
                       stdin=palette)
