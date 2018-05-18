@@ -3,8 +3,6 @@ from pathlib import Path
 
 from .video import FfprobeRuntimeError, video_duration
 
-LIBRARY_FILENAME = 'knowledgeseeker.json'
-
 class LoadError(Exception):
     pass
 
@@ -27,9 +25,9 @@ class Episode(object):
             raise LoadError('failed to read video file: %s' % video_path)
 
 def load_library_file(library_path):
-    with open(library_path / LIBRARY_FILENAME, 'rt') as f:
+    with open(library_path, 'rt') as f:
         js_data = json.load(f)
-        return [read_season_json(season_data, library_path)
+        return [read_season_json(season_data, library_path.parent)
                 for season_data in js_data]
 
 def read_season_json(season_data, relative_to_path=Path('.')):
