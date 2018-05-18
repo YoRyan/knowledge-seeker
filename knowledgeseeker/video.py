@@ -138,6 +138,26 @@ def make_webm(video_path, start_timecode, end_timecode, vres=360):
                                '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
                                '-cpu-used', '2', '-an', '-f', 'webm'])
 
+def make_webm_with_subtitles(video_path, subtitle_path, start_timecode, end_timecode,
+                             vres=360, fonts_path=None, font=None):
+    duration = end_timecode - start_timecode
+
+    # Filter for subtitles
+    subtitles_filter = 'setpts=PTS+%f/TB,subtitles=\'%s\'' % (start_timecode.seconds(),
+                                                              str(subtitle_path.absolute()))
+    if font is not None:
+        subtitles_filter += ':force_style=\'FontName=%s\'' % font
+        if fonts_path is not None:
+            subtitles_filter += ':fontsdir=%s' % fonts_path
+    subtitles_filter += ',setpts=PTS-STARTPTS'
+
+    # Create the webm
+    inputs = [(['-ss', str(start_timecode)], str(video_path.absolute()))]
+    webm_filter = 'scale=-1:%d,%s' % (vres, subtitles_filter)
+    return run_ffmpeg(inputs, ['-t', str(duration), '-filter_complex', webm_filter,
+                               '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
+                               '-cpu-used', '2', '-an', '-f', 'webm'])
+
 """
 def make_preview(video_path, start_timecode, end_timecode):
     duration = end_timecode - start_timecode
