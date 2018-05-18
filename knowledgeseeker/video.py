@@ -130,6 +130,14 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
                                    '-f', 'gif'],
                       stdin=palette)
 
+def make_webm(video_path, start_timecode, end_timecode, vres=360):
+    duration = end_timecode - start_timecode
+    inputs = [(['-ss', str(start_timecode)], str(video_path.absolute()))]
+    return run_ffmpeg(inputs, ['-t', str(duration),
+                               '-filter_complex', 'scale=-1:%d' % vres,
+                               '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
+                               '-cpu-used', '2', '-an', '-f', 'webm'])
+
 """
 def make_preview(video_path, start_timecode, end_timecode):
     duration = end_timecode - start_timecode
