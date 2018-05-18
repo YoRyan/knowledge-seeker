@@ -61,7 +61,7 @@ class Timecode(object):
 
 def make_snapshot(video_path, timecode):
     inputs = [(['-ss', str(timecode)], str(video_path.absolute()))]
-    return run_ffmpeg(inputs, ['-vframes', '1', '-f', 'singlejpeg', '-q:v', '1'])
+    return run_ffmpeg(inputs, '-vframes', '1', '-f', 'singlejpeg', '-q:v', '1')
 
 def make_snapshot_with_subtitles(video_path, subtitle_path, timecode,
                                  fonts_path=None, font=None):
@@ -76,8 +76,8 @@ def make_snapshot_with_subtitles(video_path, subtitle_path, timecode,
             subtitles_filter += ':fontsdir=%s' % fonts_path
     subtitles_filter += ',setpts=PTS-STARTPTS'
 
-    return run_ffmpeg(inputs, ['-vframes', '1', '-f', 'singlejpeg', '-q:v', '1',
-                               '-filter_complex', subtitles_filter])
+    return run_ffmpeg(inputs, '-vframes', '1', '-f', 'singlejpeg', '-q:v', '1',
+                      '-filter_complex', subtitles_filter)
 
 def make_gif(video_path, start_timecode, end_timecode, vres=360):
     duration = end_timecode - start_timecode
@@ -86,15 +86,15 @@ def make_gif(video_path, start_timecode, end_timecode, vres=360):
     palette_inputs = [(['-ss', str(start_timecode), '-t', str(duration.seconds())],
                        str(video_path.absolute()))]
     palette_filter = 'scale=-1:%d:lanczos,palettegen=stats_mode=full' % vres
-    palette = run_ffmpeg(palette_inputs, ['-filter_complex', palette_filter, '-f', 'apng'])
+    palette = run_ffmpeg(palette_inputs, '-filter_complex', palette_filter, '-f', 'apng')
 
     # Create the actual jif
     gif_inputs = [(['-ss', str(start_timecode)], str(video_path.absolute())),
                   (['-f', 'png_pipe'], '-')]
     gif_filter = ('scale=-1:%d:lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle' %
                   vres)
-    return run_ffmpeg(gif_inputs, ['-t', str(duration),
-                                   '-filter_complex', gif_filter, '-f', 'gif'],
+    return run_ffmpeg(gif_inputs,
+                      '-t', str(duration), '-filter_complex', gif_filter, '-f', 'gif',
                       stdin=palette)
 
 def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timecode,
@@ -116,25 +116,24 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
     palette_filter = ('scale=-1:%d:lanczos,palettegen=stats_mode=full,' % vres +
                       subtitles_filter)
 
-    palette = run_ffmpeg(palette_inputs, ['-filter_complex', palette_filter,
-                                          '-f', 'apng'])
+    palette = run_ffmpeg(palette_inputs, '-filter_complex', palette_filter, '-f', 'apng')
 
     # Create the actual jif
     gif_inputs = [(['-ss', str(start_timecode)], str(video_path.absolute())),
                   (['-f', 'png_pipe'], '-')]
     gif_filter = ('scale=-1:%d:lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle,' %
                   vres + subtitles_filter)
-    return run_ffmpeg(gif_inputs, ['-t', str(duration), '-filter_complex', gif_filter,
-                                   '-f', 'gif'],
+    return run_ffmpeg(gif_inputs,
+                      '-t', str(duration), '-filter_complex', gif_filter, '-f', 'gif',
                       stdin=palette)
 
 def make_webm(video_path, start_timecode, end_timecode, vres=360):
     duration = end_timecode - start_timecode
     inputs = [(['-ss', str(start_timecode)], str(video_path.absolute()))]
-    return run_ffmpeg(inputs, ['-t', str(duration), '-an', '-sn',
-                               '-filter_complex', 'scale=-1:%d' % vres,
-                               '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
-                               '-cpu-used', '2', '-f', 'webm'])
+    return run_ffmpeg(inputs, '-t', str(duration), '-an', '-sn',
+                      '-filter_complex', 'scale=-1:%d' % vres,
+                      '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
+                      '-cpu-used', '2', '-f', 'webm')
 
 def make_webm_with_subtitles(video_path, subtitle_path, start_timecode, end_timecode,
                              vres=360, fonts_path=None, font=None):
@@ -152,10 +151,9 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_timecode, end_time
     # Create the webm
     inputs = [(['-ss', str(start_timecode)], str(video_path.absolute()))]
     webm_filter = 'scale=-1:%d,%s' % (vres, subtitles_filter)
-    return run_ffmpeg(inputs, ['-t', str(duration), '-an', '-sn',
-                               '-filter_complex', webm_filter,
-                               '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
-                               '-cpu-used', '2', '-f', 'webm'])
+    return run_ffmpeg(inputs, '-t', str(duration), '-an', '-sn', '-filter_complex', webm_filter,
+                      '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
+                      '-cpu-used', '2', '-f', 'webm')
 
 """
 def make_preview(video_path, start_timecode, end_timecode):
@@ -170,9 +168,9 @@ def make_preview(video_path, start_timecode, end_timecode):
         raise FfmpegRuntimeError
 """
 
-def run_ffmpeg(inputs, output_args, stdin=None):
+def run_ffmpeg(inputs, *output_args, stdin=None):
     args = (sum([input_args + ['-i', input_file] for input_args, input_file in inputs], []) +
-            output_args + ['-'])
+            list(output_args) + ['-'])
     process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     if process.returncode == 0:
