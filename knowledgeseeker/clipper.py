@@ -195,7 +195,7 @@ def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config
     if 'SUBTITLES_FONT' in app_config:
         if 'SUBTITLES_FONTSDIR' in app_config:
-            kwargs['fonts_path'] = app_config['SUBTITLES_FONTSDIR']
+            kwargs['fonts_path'] = Path(app_config['SUBTITLES_FONTSDIR'])
             kwargs['font'] = app_config['SUBTITLES_FONT']
         else:
             kwargs['font'] = app_config['SUBTITLES_FONT']
