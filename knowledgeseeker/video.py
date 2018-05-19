@@ -176,5 +176,5 @@ def _subtitle_filter(subtitle_path, start_timecode, fonts_path=None, font=None):
     return f
 
 _expand = lambda path: str(path.absolute())
-_escape = lambda path: "'%s'" % path.replace("'", "'\\\\\\''")
+_escape = lambda path: "'%s'" % path.replace(':', '\\:').replace("'", "'\\\\\\''")
 
