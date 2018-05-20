@@ -155,19 +155,6 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
                                'cpu-used': 2 })
     return ffmpeg_run_stdout(stream)
 
-"""
-def make_preview(video_path, start_timecode, end_timecode):
-    duration = end_timecode - start_timecode
-    args = ['-ss', str(start_timecode), '-i', video_path, '-t', str(duration),
-            '-f', 'webm', '-']
-    ffmpeg = subprocess.run([FFMPEG_PATH] + args,
-                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    if ffmpeg.returncode == 0:
-        return ffmpeg.stdout
-    else:
-        raise FfmpegRuntimeError
-"""
-
 def ffmpeg_run_stdout(stream, stdin=None):
     args = stream.get_args()
     # NOTE: nasty workaround for bad escaping by ffmpeg-python
