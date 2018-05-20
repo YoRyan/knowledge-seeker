@@ -92,18 +92,18 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
                            ss=start_time,
                            t=duration.total_seconds())
     pstream = ffmpeg.filter_(pstream, 'scale', -1, vres, 'lanczos')
-    pstream = ffmpeg.filter_(pstream, 'palettegen', stats_mode='full')
     pstream = ffmpeg_subtitles_filter(pstream, subtitle_path, start_time,
                                       fonts_path=fonts_path, font=font)
+    pstream = ffmpeg.filter_(pstream, 'palettegen', stats_mode='full')
 
     # Create the actual jif
     gstream = ffmpeg.input(video_path,
                            ss=start_time)
     gstream = ffmpeg.filter_(gstream, 'scale', -1, vres, 'lanczos')
     gstream_kwargs = { 'dither': 'bayer', 'bayer_scale': 5, 'diff_mode': 'rectangle' }
-    gstream = ffmpeg_paletteuse_filter(gstream, pstream, **gstream_kwargs)
     gstream = ffmpeg_subtitles_filter(gstream, subtitle_path, start_time,
                                       fonts_path=fonts_path, font=font)
+    gstream = ffmpeg_paletteuse_filter(gstream, pstream, **gstream_kwargs)
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
                             t=duration.total_seconds())
