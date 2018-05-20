@@ -1,5 +1,6 @@
 import re
 import subprocess
+from datetime import timedelta
 
 FFMPEG_PATH = 'ffmpeg'
 FFPROBE_PATH = 'ffprobe'
@@ -9,6 +10,18 @@ class FfmpegRuntimeError(Exception):
 
 class FfprobeRuntimeError(Exception):
     pass
+
+def timedelta_to_timecode(td):
+    atd = abs(td)
+    milliseconds = round(atd.microseconds/1000)
+    seconds = atd.seconds % 60
+    minutes = atd.seconds // 60 % 60
+    hours = atd.seconds // 60 // 60
+    string = '%02d:%02d:%02d.%03d' % (hours, minutes, seconds, milliseconds)
+    if td >= timedelta(0):
+        return string
+    else:
+        return '-%s' % string
 
 class Timecode(object):
     # HH:MM:SS:ZZZ

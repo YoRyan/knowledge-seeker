@@ -1,11 +1,12 @@
 import flask
-import functools
+import json
 import re
+import srt
 import subprocess
 from pathlib import Path
 
 from . import cache
-from .video import (Timecode,
+from .video import (Timecode, timedelta_to_timecode,
                     make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
@@ -118,17 +119,6 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
 def reject_gif_with_subtitles(season, episode, start_timecode, end_timecode):
     return http_error(403, 'creating gif\'s with subtitles currently prohibited')
 
-def find_episode(season, episode):
-    seasons = [s for s in flask.current_app.library_data if s.slug == season]
-    if len(seasons) == 0:
-        return None
-    else:
-        episodes = [e for e in seasons[0].episodes if e.slug == episode]
-        if len(episodes) == 0:
-            return None
-        else:
-            return episodes[0]
-
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm')
 @cache.cached(timeout=None)
 def webm(season, episode, start_timecode, end_timecode):
@@ -184,6 +174,39 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
     return response
+
+@bp.route('/<season>/<episode>/subtitles')
+def subtitles(season, episode):
+    # Find episode
+    matched_episode = find_episode(season, episode)
+    if matched_episode is None:
+        return http_error(404, 'season/episode not found')
+    elif matched_episode.subtitles_path is None:
+        return http_error(404, 'no subtitles available')
+    # Read srt file
+    with open(str(matched_episode.subtitles_path)) as f:
+        srt_contents = f.read()
+    subtitles = list(srt.parse(srt_contents))
+    subtitles.sort(key=lambda s: s.index)
+    # Return json object
+    subtitle_to_js = lambda s: { 'start': timedelta_to_timecode(s.start),
+                                 'end': timedelta_to_timecode(s.end),
+                                 'text': s.content }
+    data = json.dumps([subtitle_to_js(s) for s in subtitles])
+    response = flask.make_response(data)
+    response.headers.set('Content-type', 'application/json')
+    return response
+
+def find_episode(season, episode):
+    seasons = [s for s in flask.current_app.library_data if s.slug == season]
+    if len(seasons) == 0:
+        return None
+    else:
+        episodes = [e for e in seasons[0].episodes if e.slug == episode]
+        if len(episodes) == 0:
+            return None
+        else:
+            return episodes[0]
 
 def timecode_valid(timecode):
     return re.match(r'^(\d?\d:)?[0-5]?\d:[0-5]?\d(\.\d\d?\d?)?$', timecode)

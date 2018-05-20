@@ -25,7 +25,7 @@ class Episode(object):
             raise LoadError('failed to read video file: %s' % video_path)
 
 def load_library_file(library_path):
-    with open(str(library_path.absolute()), 'rt') as f:
+    with open(str(library_path), 'rt') as f:
         js_data = json.load(f)
         return [read_season_json(season_data, library_path.parent)
                 for season_data in js_data]
