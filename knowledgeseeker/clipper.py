@@ -89,7 +89,7 @@ def gif(season, episode, start_timecode, end_timecode):
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
 @cache.cached(timeout=None)
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
-    if environ['FLASK_ENV'] == 'prod':
+    if not flask.current_app.config['DEV']:
         return http_error(403, 'gif\'s with subtitles currently prohibited')
 
     # Find episode

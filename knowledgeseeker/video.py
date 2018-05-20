@@ -2,7 +2,7 @@ import re
 import ffmpeg
 import subprocess
 from datetime import timedelta
-from os import environ
+from flask import current_app
 
 FFMPEG_PATH = 'ffmpeg'
 FFPROBE_PATH = 'ffprobe'
@@ -152,7 +152,7 @@ def ffmpeg_run_stdout(stream, stdin=None):
             .replace('\\\\\\\\\\\\\\', '\\\\\\')
             .replace('\\\\\\\\\\\\', '\\\\\\')
             for a in args]
-    if environ['FLASK_ENV'] == 'prod':
+    if current_app.config['DEV']:
         process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     else:

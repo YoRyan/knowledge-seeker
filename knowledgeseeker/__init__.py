@@ -1,6 +1,6 @@
-import os
 from flask import Flask
 from flask_caching import Cache
+from os import environ
 from pathlib import Path
 
 from .library import load_library_file
@@ -11,6 +11,7 @@ cache = Cache(config={ 'CACHE_TYPE': 'simple',
 def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_object('config')
+    app.config['DEV'] = 'FLASK_ENV' in environ and environ['FLASK_ENV'] == 'development'
 
     from . import clipper
     app.register_blueprint(clipper.bp)
