@@ -4,6 +4,7 @@ import re
 import srt
 import subprocess
 from datetime import timedelta
+from os import environ
 from pathlib import Path
 
 from . import cache
@@ -85,9 +86,12 @@ def gif(season, episode, start_timecode, end_timecode):
     response.headers.set('Content-Type', 'image/gif')
     return response
 
-#@bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
+@bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
 @cache.cached(timeout=None)
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
+    if environ['FLASK_ENV'] == 'prod':
+        return http_error(403, 'gif\'s with subtitles currently prohibited')
+
     # Find episode
     matched_episode = find_episode(season, episode)
     if matched_episode is None:
@@ -115,10 +119,6 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
     return response
-
-@bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
-def reject_gif_with_subtitles(season, episode, start_timecode, end_timecode):
-    return http_error(403, 'creating gif\'s with subtitles currently prohibited')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm')
 @cache.cached(timeout=None)
