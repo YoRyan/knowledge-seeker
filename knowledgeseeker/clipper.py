@@ -187,8 +187,8 @@ def subtitles(season, episode):
     subtitles = list(srt.parse(srt_contents))
     subtitles.sort(key=lambda s: s.index)
     # Return json object
-    subtitle_to_js = lambda s: { 'start': timedelta_to_timecode(s.start),
-                                 'end': timedelta_to_timecode(s.end),
+    subtitle_to_js = lambda s: { 'start': strptimecode(s.start),
+                                 'end': strptimecode(s.end),
                                  'text': s.content }
     data = json.dumps([subtitle_to_js(s) for s in subtitles])
     response = flask.make_response(data)
