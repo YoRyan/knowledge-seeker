@@ -11,7 +11,7 @@ class FfmpegRuntimeError(Exception):
 class FfprobeRuntimeError(Exception):
     pass
 
-def timedelta_to_timecode(td):
+def strptimecode(td):
     atd = abs(td)
     milliseconds = round(atd.microseconds/1000)
     seconds = atd.seconds % 60
@@ -23,77 +23,42 @@ def timedelta_to_timecode(td):
     else:
         return '-%s' % string
 
-class Timecode(object):
-    # HH:MM:SS:ZZZ
-    def __init__(self, milliseconds=0):
-        self.value = milliseconds
-    def seconds(self):
-        return self.value / 1000
-    def __repr__(self):
-        milliseconds = abs(self.value) % 1000
-        seconds = abs(self.value) // 1000 % 60
-        minutes = abs(self.value) // 1000 // 60 % 60
-        hours = abs(self.value) // 1000 // 60 // 60
-        string = '%02d:%02d:%02d.%03d' % (hours, minutes, seconds, milliseconds)
-        if self.value >= 0:
-            return string
+def strftimecode(tc):
+    match = re.search(r'^(\d*:)?(\d+):(\d+\.?\d*)$', tc)
+    if match is not None:
+        groups = match.groups()
+        if groups[0] is None:
+            hours = 0
         else:
-            return '-' + string
-    def __str__(self):
-        return self.__repr__()
-    def __eq__(self, other):
-        return self.value == other.value
-    def __add__(self, other):
-        return Timecode(self.value + other.value)
-    def __sub__(self, other):
-        return Timecode(self.value - other.value)
-    def __gt__(self, other):
-        return self.value > other.value
-    def __ge__(self, other):
-        return self > other or self == other
-    def __lt__(self, other):
-        return self.value < other.value
-    def __le__(self, other):
-        return self < other or self == other
-    def __abs__(self):
-        return Timecode(abs(self.value))
+            hours = int(groups[0][:-1])
+        minutes = int(groups[1])
+        milliseconds = round(float(groups[2])*1000)
+        return timedelta(hours=hours, minutes=minutes, milliseconds=milliseconds)
+    else:
+        raise ValueError('invalid timecode format: \'%s\'' % tc)
 
-    def strftimecode(string):
-        match = re.search(r'^(\d*:)?(\d+):(\d+\.?\d*)$', string)
-        if match is not None:
-            groups = match.groups()
-            if groups[0] is None:
-                hours = 0
-            else:
-                hours = int(groups[0][:-1])
-            minutes = int(groups[1])
-            milliseconds = round(float(groups[2])*1000)
-            return Timecode(hours*60*60*1000 + minutes*60*1000 + milliseconds)
-        else:
-            raise ValueError('invalid timecode format: \'%s\'' % string)
-
-def make_snapshot(video_path, timecode):
-    inputs = [(['-ss', str(timecode)], _expand(video_path))]
+def make_snapshot(video_path, time):
+    inputs = [(['-ss', strptimecode(time)], _expand(video_path))]
     return run_ffmpeg(inputs, '-vframes', '1', '-f', 'singlejpeg', '-q:v', '1')
 
-def make_snapshot_with_subtitles(video_path, subtitle_path, timecode,
+def make_snapshot_with_subtitles(video_path, subtitle_path, time,
                                  fonts_path=None, font=None):
-    inputs = [(['-ss', str(timecode)], _expand(video_path))]
-    subtitles_filter = _subtitle_filter(subtitle_path, timecode, fonts_path, font)
+    inputs = [(['-ss', strptimecode(time)], _expand(video_path))]
+    subtitles_filter = _subtitle_filter(subtitle_path, time, fonts_path, font)
     return run_ffmpeg(inputs, '-vframes', '1', '-f', 'singlejpeg', '-q:v', '1',
                       '-filter_complex', subtitles_filter)
 
-def make_gif(video_path, start_timecode, end_timecode, vres=360):
-    duration = end_timecode - start_timecode
+def make_gif(video_path, start_time, end_time, vres=360):
+    duration = end_time - start_time
 
     # Get color palette for the highest quality
-    palette_inputs = [(['-ss', str(start_timecode), '-t', str(duration.seconds())],
+    palette_inputs = [(['-ss', strptimecode(start_time), '-t', str(duration.total_seconds())],
                        _expand(video_path))]
     palette_filter = 'scale=-1:%d:lanczos,palettegen=stats_mode=full' % vres
     palette = run_ffmpeg(palette_inputs, '-filter_complex', palette_filter, '-f', 'apng')
 
     # Create the actual jif
-    gif_inputs = [(['-ss', str(start_timecode)], _expand(video_path)),
+    gif_inputs = [(['-ss', strptimecode(start_time)], _expand(video_path)),
                   (['-f', 'png_pipe'], '-')]
     gif_filter = ('scale=-1:%d:lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle' %
                   vres)
@@ -101,13 +66,13 @@ def make_gif(video_path, start_timecode, end_timecode, vres=360):
                       '-t', str(duration), '-filter_complex', gif_filter, '-f', 'gif',
                       stdin=palette)
 
-def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timecode,
+def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
                             vres=360, fonts_path=None, font=None):
-    duration = end_timecode - start_timecode
-    subtitles_filter = _subtitle_filter(subtitle_path, start_timecode, fonts_path, font)
+    duration = end_time - start_time
+    subtitles_filter = _subtitle_filter(subtitle_path, start_time, fonts_path, font)
 
     # Get color palette for the highest quality
-    palette_inputs = [(['-ss', str(start_timecode), '-t', str(duration.seconds())],
+    palette_inputs = [(['-ss', strptimecode(start_time), '-t', str(duration.total_seconds())],
                        _expand(video_path))]
     palette_filter = ('scale=-1:%d:lanczos,palettegen=stats_mode=full,' % vres +
                       subtitles_filter)
@@ -115,7 +80,7 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
     palette = run_ffmpeg(palette_inputs, '-filter_complex', palette_filter, '-f', 'apng')
 
     # Create the actual jif
-    gif_inputs = [(['-ss', str(start_timecode)], _expand(video_path)),
+    gif_inputs = [(['-ss', strptimecode(start_time)], _expand(video_path)),
                   (['-f', 'png_pipe'], '-')]
     gif_filter = ('scale=-1:%d:lanczos,paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle,' %
                   vres + subtitles_filter)
@@ -123,21 +88,21 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_timecode, end_timec
                       '-t', str(duration), '-filter_complex', gif_filter, '-f', 'gif',
                       stdin=palette)
 
-def make_webm(video_path, start_timecode, end_timecode, vres=360):
-    duration = end_timecode - start_timecode
-    inputs = [(['-ss', str(start_timecode)], _expand(video_path))]
+def make_webm(video_path, start_time, end_time, vres=360):
+    duration = end_time - start_time
+    inputs = [(['-ss', strptimecode(start_time)], _expand(video_path))]
     return run_ffmpeg(inputs, '-t', str(duration), '-an', '-sn',
                       '-filter_complex', 'scale=-1:%d' % vres,
                       '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
                       '-cpu-used', '2', '-f', 'webm')
 
-def make_webm_with_subtitles(video_path, subtitle_path, start_timecode, end_timecode,
+def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
                              vres=360, fonts_path=None, font=None):
-    duration = end_timecode - start_timecode
-    subtitles_filter = _subtitle_filter(subtitle_path, start_timecode, fonts_path, font)
+    duration = end_time - start_time
+    subtitles_filter = _subtitle_filter(subtitle_path, start_time, fonts_path, font)
 
     # Create the webm
-    inputs = [(['-ss', str(start_timecode)], _expand(video_path))]
+    inputs = [(['-ss', strptimecode(start_time)], _expand(video_path))]
     webm_filter = 'scale=-1:%d,%s' % (vres, subtitles_filter)
     return run_ffmpeg(inputs, '-t', str(duration), '-an', '-sn', '-filter_complex', webm_filter,
                       '-c:v', 'libvpx-vp9', '-crf', '35', '-b:v', '1000k',
@@ -174,12 +139,12 @@ def video_duration(video_path):
                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     if process.returncode == 0:
         duration = process.stdout.decode('ascii').strip()
-        return Timecode.strftimecode(duration)
+        return strftimecode(duration)
     else:
         raise FfprobeRuntimeError
 
-def _subtitle_filter(subtitle_path, start_timecode, fonts_path=None, font=None):
-    f = 'setpts=PTS+%f/TB,subtitles=%s' % (start_timecode.seconds(),
+def _subtitle_filter(subtitle_path, start_time, fonts_path=None, font=None):
+    f = 'setpts=PTS+%f/TB,subtitles=%s' % (start_time.total_seconds(),
                                            _escape(_expand(subtitle_path)))
     if font is not None:
         f += ':force_style=\'FontName=%s\'' % font

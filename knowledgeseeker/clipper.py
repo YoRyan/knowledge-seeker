@@ -3,10 +3,11 @@ import json
 import re
 import srt
 import subprocess
+from datetime import timedelta
 from pathlib import Path
 
 from . import cache
-from .video import (Timecode, timedelta_to_timecode,
+from .video import (strptimecode, strftimecode,
                     make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
@@ -26,7 +27,7 @@ def snapshot(season, episode, timecode):
     # Check timecodes
     if not timecode_valid(timecode):
         return http_error(400, 'invalid timecode format')
-    time = Timecode.strftimecode(timecode)
+    time = strftimecode(timecode)
     if not timecode_in_episode(time, matched_episode):
         return http_error(416, 'timecode out of range')
     # Prepare response
@@ -46,7 +47,7 @@ def snapshot_with_subtitles(season, episode, timecode):
     # Check timecodes
     if not timecode_valid(timecode):
         return http_error(400, 'invalid timecode format')
-    time = Timecode.strftimecode(timecode)
+    time = strftimecode(timecode)
     if not timecode_in_episode(time, matched_episode):
         return http_error(416, 'timecode out of range')
     # Prepare response
@@ -67,8 +68,8 @@ def gif(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
+    start = strftimecode(start_timecode)
+    end = strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -76,7 +77,7 @@ def gif(season, episode, start_timecode, end_timecode):
         end = matched_episode.duration
     if start >= end:
         return http_error(400, 'bad time range')
-    elif end - start > Timecode(MAX_GIF_SECS*1000):
+    elif end - start > timedelta(seconds=MAX_GIF_SECS):
         return http_error(416, 'requested time range exceeds maximum limit')
     # Prepare response
     data = make_gif(matched_episode.video_path, start, end)
@@ -96,8 +97,8 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
+    start = strftimecode(start_timecode)
+    end = strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -105,7 +106,7 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
         end = matched_episode.duration
     if start >= end:
         return http_error(400, 'bad time range')
-    elif end - start > Timecode(MAX_GIF_SECS*1000):
+    elif end - start > timedelta(seconds=MAX_GIF_SECS):
         return http_error(416, 'requested time range exceeds maximum limit')
     # Prepare response
     data = call_with_fonts(make_gif_with_subtitles,
@@ -129,8 +130,8 @@ def webm(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
+    start = strftimecode(start_timecode)
+    end = strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -138,7 +139,7 @@ def webm(season, episode, start_timecode, end_timecode):
         end = matched_episode.duration
     if start >= end:
         return http_error(400, 'bad time range')
-    elif end - start > Timecode(MAX_WEBM_SECS*1000):
+    elif end - start > timedelta(seconds=MAX_WEBM_SECS):
         return http_error(416, 'requested time range exceeds maximum limit')
     # Prepare response
     data = make_webm(matched_episode.video_path, start, end)
@@ -156,8 +157,8 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
+    start = strftimecode(start_timecode)
+    end = strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -165,7 +166,7 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
         end = matched_episode.duration
     if start >= end:
         return http_error(400, 'bad time range')
-    elif end - start > Timecode(MAX_WEBM_SECS*1000):
+    elif end - start > timedelta(seconds=MAX_WEBM_SECS):
         return http_error(416, 'requested time range exceeds maximum limit')
     # Prepare response
     data = call_with_fonts(make_webm_with_subtitles,
@@ -212,7 +213,7 @@ def timecode_valid(timecode):
     return re.match(r'^(\d?\d:)?[0-5]?\d:[0-5]?\d(\.\d\d?\d?)?$', timecode)
 
 def timecode_in_episode(timecode, episode):
-    return timecode >= Timecode(0) and timecode <= episode.duration
+    return timecode >= timedelta(0) and timecode <= episode.duration
 
 def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config
