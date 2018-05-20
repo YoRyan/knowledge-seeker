@@ -145,25 +145,6 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
                                'cpu-used': 2 })
     return ffmpeg_run_stdout(stream)
 
-def ffmpeg_run_stdout(stream, stdin=None):
-    args = stream.get_args()
-    # NOTE: nasty workaround for bad escaping by ffmpeg-python
-    args = [str(a)
-            .replace('\\\\\\\\\\\\\\', '\\\\\\')
-            .replace('\\\\\\\\\\\\', '\\\\\\')
-            for a in args]
-    if current_app.config['DEV']:
-        process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
-                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    else:
-        print('Running ffmpeg with args: %s\n' % ' '.join(args))
-        process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
-                                 stdout=subprocess.PIPE)
-    if process.returncode == 0:
-        return process.stdout
-    else:
-        raise FfmpegRuntimeError
-
 def video_duration(video_path):
     # https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
     args = ['-v', 'error', '-show_entries', 'format=duration', '-of',
@@ -195,4 +176,23 @@ def ffmpeg_paletteuse_filter(video_stream, palette_stream, **kwargs):
     node = ffmpeg.nodes.FilterNode([video_stream, palette_stream], 'paletteuse',
                                    max_inputs=2, kwargs=kwargs)
     return node.stream()
+
+def ffmpeg_run_stdout(stream, stdin=None):
+    args = stream.get_args()
+    # NOTE: nasty workaround for bad escaping by ffmpeg-python
+    args = [str(a)
+            .replace('\\\\\\\\\\\\\\', '\\\\\\')
+            .replace('\\\\\\\\\\\\', '\\\\\\')
+            for a in args]
+    if current_app.config['DEV']:
+        process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    else:
+        print('Running ffmpeg with args: %s\n' % ' '.join(args))
+        process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
+                                 stdout=subprocess.PIPE)
+    if process.returncode == 0:
+        return process.stdout
+    else:
+        raise FfmpegRuntimeError
 
