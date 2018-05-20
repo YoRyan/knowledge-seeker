@@ -9,6 +9,7 @@ setup(
     install_requires=[
         'flask',
         'Flask-Caching',
+        'ffmpeg-python',
         'srt'
     ],
 )

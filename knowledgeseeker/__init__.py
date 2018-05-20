@@ -4,7 +4,6 @@ from flask_caching import Cache
 from pathlib import Path
 
 from .library import load_library_file
-from .video import run_ffmpeg
 
 cache = Cache(config={ 'CACHE_TYPE': 'simple',
                        'CACHE_THRESHOLD': 200 }) # 200*5 MB = 1 GB
