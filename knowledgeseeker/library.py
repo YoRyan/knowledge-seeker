@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from srt import parse as parse_srt
 
 from .video import FfprobeRuntimeError, video_duration
 
@@ -13,11 +14,13 @@ class Season(object):
         self.episodes = episodes
 
 class Episode(object):
-    def __init__(self, slug, video_path, name=None, subtitles_path=None):
+    def __init__(self, slug, video_path, name=None, subtitles_path=None,
+                 subtitles=[]):
         self.slug = slug
         self.name = name
         self.video_path = video_path
         self.subtitles_path = subtitles_path
+        self.subtitles = subtitles
 
         try:
             self.duration = video_duration(video_path)
@@ -51,14 +54,20 @@ def read_episode_json(episode_data, relative_to_path=Path('.')):
     video = relative_to_path / Path(episode_data['videoFile'])
 
     if 'subtitleFile' in episode_data:
-        subtitles = relative_to_path / Path(episode_data['subtitleFile'])
+        subtitles_path = relative_to_path / Path(episode_data['subtitleFile'])
+        with open(subtitles_path) as f:
+            contents = f.read()
+        subtitles = list(parse_srt(contents))
+        subtitles.sort(key=lambda s: s.index)
     else:
-        subtitles = None
+        subtitles_path = None
+        subtitles = []
 
     if 'episodeName' in episode_data:
         name = episode_data['episodeName']
     else:
         name = None
 
-    return Episode(slug, video, name=name, subtitles_path=subtitles)
+    return Episode(slug, video, name=name, subtitles_path=subtitles_path,
+                   subtitles=subtitles)
 

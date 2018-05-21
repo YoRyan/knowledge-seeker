@@ -1,16 +1,14 @@
 import flask
 import json
 import re
-import srt
 import subprocess
 from datetime import timedelta
 from os import environ
 from pathlib import Path
 
 from . import cache
-from .utils import find_episode, http_error
-from .video import (strptimecode, strftimecode,
-                    make_snapshot, make_snapshot_with_subtitles,
+from .utils import strptimecode, strftimecode, find_episode, http_error
+from .video import (make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
 
@@ -182,16 +180,11 @@ def subtitles(season, episode):
         return http_error(404, 'season/episode not found')
     elif matched_episode.subtitles_path is None:
         return http_error(404, 'no subtitles available')
-    # Read srt file
-    with open(str(matched_episode.subtitles_path)) as f:
-        srt_contents = f.read()
-    subtitles = list(srt.parse(srt_contents))
-    subtitles.sort(key=lambda s: s.index)
     # Return json object
     subtitle_to_js = lambda s: { 'start': strptimecode(s.start),
                                  'end': strptimecode(s.end),
                                  'text': s.content }
-    data = json.dumps([subtitle_to_js(s) for s in subtitles])
+    data = json.dumps([subtitle_to_js(s) for s in matched_episode.subtitles])
     response = flask.make_response(data)
     response.headers.set('Content-type', 'application/json')
     return response

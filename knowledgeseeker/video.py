@@ -1,8 +1,8 @@
-import re
 import ffmpeg
 import subprocess
-from datetime import timedelta
 from flask import current_app
+
+from .utils import strptimecode, strftimecode
 
 FFMPEG_PATH = 'ffmpeg'
 FFPROBE_PATH = 'ffprobe'
@@ -12,32 +12,6 @@ class FfmpegRuntimeError(Exception):
 
 class FfprobeRuntimeError(Exception):
     pass
-
-def strptimecode(td):
-    atd = abs(td)
-    milliseconds = round(atd.microseconds/1000)
-    seconds = atd.seconds % 60
-    minutes = atd.seconds // 60 % 60
-    hours = atd.seconds // 60 // 60
-    string = '%02d:%02d:%02d.%03d' % (hours, minutes, seconds, milliseconds)
-    if td >= timedelta(0):
-        return string
-    else:
-        return '-%s' % string
-
-def strftimecode(tc):
-    match = re.search(r'^(\d*:)?(\d+):(\d+\.?\d*)$', tc)
-    if match is not None:
-        groups = match.groups()
-        if groups[0] is None:
-            hours = 0
-        else:
-            hours = int(groups[0][:-1])
-        minutes = int(groups[1])
-        milliseconds = round(float(groups[2])*1000)
-        return timedelta(hours=hours, minutes=minutes, milliseconds=milliseconds)
-    else:
-        raise ValueError('invalid timecode format: \'%s\'' % tc)
 
 def make_snapshot(video_path, time):
     stream = (ffmpeg
