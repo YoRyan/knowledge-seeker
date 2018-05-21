@@ -8,6 +8,7 @@ from os import environ
 from pathlib import Path
 
 from . import cache
+from .utils import find_episode, http_error
 from .video import (strptimecode, strftimecode,
                     make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
@@ -22,7 +23,7 @@ bp = flask.Blueprint('clipper', __name__)
 @bp.route('/<season>/<episode>/<timecode>/pic')
 def snapshot(season, episode, timecode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     # Check timecodes
@@ -40,7 +41,7 @@ def snapshot(season, episode, timecode):
 @bp.route('/<season>/<episode>/<timecode>/pic/sub')
 def snapshot_with_subtitles(season, episode, timecode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     elif matched_episode.subtitles_path is None:
@@ -63,7 +64,7 @@ def snapshot_with_subtitles(season, episode, timecode):
 @cache.cached(timeout=None)
 def gif(season, episode, start_timecode, end_timecode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     # Check timecodes
@@ -90,7 +91,7 @@ def gif(season, episode, start_timecode, end_timecode):
 @cache.cached(timeout=None)
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     elif matched_episode.subtitles_path is None:
@@ -121,7 +122,7 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
 @cache.cached(timeout=None)
 def webm(season, episode, start_timecode, end_timecode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     # Check timecodes
@@ -148,7 +149,7 @@ def webm(season, episode, start_timecode, end_timecode):
 @cache.cached(timeout=None)
 def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     # Check timecodes
@@ -176,7 +177,7 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
 @bp.route('/<season>/<episode>/subtitles')
 def subtitles(season, episode):
     # Find episode
-    matched_episode = find_episode(season, episode)
+    matched_season, matched_episode = find_episode(season, episode)
     if matched_episode is None:
         return http_error(404, 'season/episode not found')
     elif matched_episode.subtitles_path is None:
@@ -195,17 +196,6 @@ def subtitles(season, episode):
     response.headers.set('Content-type', 'application/json')
     return response
 
-def find_episode(season, episode):
-    seasons = [s for s in flask.current_app.library_data if s.slug == season]
-    if len(seasons) == 0:
-        return None
-    else:
-        episodes = [e for e in seasons[0].episodes if e.slug == episode]
-        if len(episodes) == 0:
-            return None
-        else:
-            return episodes[0]
-
 def timecode_valid(timecode):
     return re.match(r'^(\d?\d:)?[0-5]?\d:[0-5]?\d(\.\d\d?\d?)?$', timecode)
 
@@ -221,7 +211,4 @@ def call_with_fonts(callee, *args, **kwargs):
         else:
             kwargs['font'] = app_config['SUBTITLES_FONT']
     return callee(*args, **kwargs)
-
-def http_error(code, message):
-    return flask.Response(message, status=code, mimetype='text/plain')
 

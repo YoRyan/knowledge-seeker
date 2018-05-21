@@ -16,6 +16,9 @@ def create_app(test_config=None):
     from . import clipper
     app.register_blueprint(clipper.bp)
 
+    from . import explorer
+    app.register_blueprint(explorer.bp)
+
     init_app(app)
 
     return app
@@ -23,4 +26,7 @@ def create_app(test_config=None):
 def init_app(app):
     app.library_data = load_library_file(Path(app.config['LIBRARY']))
     cache.init_app(app)
+
+def http_error(code, message):
+    return flask.Response(message, status=code, mimetype='text/plain')
 
