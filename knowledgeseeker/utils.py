@@ -46,3 +46,8 @@ def find_episode(season, episode):
 def http_error(code, message):
     return flask.Response(message, status=code, mimetype='text/plain')
 
+# https://stackoverflow.com/a/21303393
+def grouper(input_list, n=2):
+    for i in range(len(input_list) - (n - 1)):
+        yield input_list[i:i + n]
+

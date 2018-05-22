@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+        <title>{{ title }} - Knowledge Seeker</title>
+</head>
+
+<body>
+        <nav>
+                <h1><a href="../..">{{ season.name }}</a> |
+                    <a href="..">{{ episode.name }}</a></h1>
+        </nav>
+        <section>
+                <div>
+                        <img width="720" height="480" alt="" src="pic">
+                </div>
+                <div>
+                        <span class="surrounding-line">{{ previous_line|safe }}</span>
+                        <span id="this-line">{{ this_line|safe }}</span>
+                        <span class="surrounding-line">{{ next_line|safe }}</span>
+                </div>
+        </section>
+</body>
+</html>
