@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from srt import parse as parse_srt
 
+from .utils import Timecode
 from .video import FfprobeRuntimeError, video_duration
 
 class LoadError(Exception):

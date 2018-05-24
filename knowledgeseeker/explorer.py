@@ -2,10 +2,21 @@ import flask
 import re
 from datetime import timedelta
 
-from .utils import (Timecode, match_season_episode, episode_has_subtitles,
-                    parse_timecode, http_error)
+from .utils import (Timecode, match_season, match_season_episode,
+                    episode_has_subtitles, parse_timecode)
 
 bp = flask.Blueprint('explorer', __name__)
+
+@bp.route('/<season>/')
+@match_season
+def browse_season(season):
+    render = lambda episode: { 'timecode': episode.duration/2,
+                               'duration': strptimecode(episode.duration),
+                               'name': episode.name,
+                               'slug': episode.slug }
+    return flask.render_template('season.html',
+                                 season=season,
+                                 episodes=[render(episode) for episode in season.episodes])
 
 @bp.route('/<season>/<episode>/')
 @match_season_episode

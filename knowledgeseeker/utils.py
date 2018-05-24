@@ -19,6 +19,8 @@ class Timecode(timedelta):
             return string
         else:
             return '-%s' % string
+    def __truediv__(self, other):
+        return Timecode.from_timedelta(timedelta.__truediv__(self, other))
     def strftimecode(s):
         match = re.search(r'^(\d*:)?(\d+):(\d+\.?\d*)$', s)
         if match is not None:
@@ -35,27 +37,32 @@ class Timecode(timedelta):
     def from_timedelta(td):
         return Timecode(days=td.days, seconds=td.seconds, microseconds=td.microseconds)
 
-def match_season_episode(f):
+def match_season(f):
     @wraps(f)
     def decorator(**kwargs):
         season_slug = kwargs['season']
-        episode_slug = kwargs['episode']
-        # Locate season
         seasons = [season for season in flask.current_app.library_data
                    if season.slug == season_slug]
         if len(seasons) == 0:
             return http_error(404, 'season \'%s\' not found' % season_slug)
         season = seasons[0]
-        # Locate episode
+        kwargs.pop('season')
+        return f(season=season, **kwargs)
+    return decorator
+
+def match_season_episode(f):
+    @wraps(f)
+    @match_season
+    def decorator(**kwargs):
+        season = kwargs['season']
+        episode_slug = kwargs['episode']
         episodes = [episode for episode in season.episodes
                     if episode.slug == episode_slug]
         if len(episodes) == 0:
             return http_error(404, 'episode \'%s\' not found' % episode_slug)
         episode = episodes[0]
-        # Run decorated function
-        kwargs.pop('season')
         kwargs.pop('episode')
-        return f(season=season, episode=episode, **kwargs)
+        return f(episode=episode, **kwargs)
     return decorator
 
 def episode_has_subtitles(f):
