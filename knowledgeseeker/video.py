@@ -2,7 +2,7 @@ import ffmpeg
 import subprocess
 from flask import current_app
 
-from .utils import strptimecode, strftimecode
+from .utils import Timecode
 
 FFMPEG_PATH = 'ffmpeg'
 FFPROBE_PATH = 'ffprobe'
@@ -127,7 +127,7 @@ def video_duration(video_path):
                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     if process.returncode == 0:
         duration = process.stdout.decode('ascii').strip()
-        return strftimecode(duration)
+        return Timecode.strftimecode(duration)
     else:
         raise FfprobeRuntimeError
 

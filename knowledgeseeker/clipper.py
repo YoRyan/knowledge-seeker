@@ -7,7 +7,7 @@ from os import environ
 from pathlib import Path
 
 from . import cache
-from .utils import strptimecode, strftimecode, find_episode, http_error
+from .utils import Timecode, find_episode, http_error
 from .video import (make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
@@ -27,7 +27,7 @@ def snapshot(season, episode, timecode):
     # Check timecodes
     if not timecode_valid(timecode):
         return http_error(400, 'invalid timecode format')
-    time = strftimecode(timecode)
+    time = Timecode.strftimecode(timecode)
     if not timecode_in_episode(time, matched_episode):
         return http_error(416, 'timecode out of range')
     # Prepare response
@@ -47,7 +47,7 @@ def snapshot_with_subtitles(season, episode, timecode):
     # Check timecodes
     if not timecode_valid(timecode):
         return http_error(400, 'invalid timecode format')
-    time = strftimecode(timecode)
+    time = Timecode.strftimecode(timecode)
     if not timecode_in_episode(time, matched_episode):
         return http_error(416, 'timecode out of range')
     # Prepare response
@@ -68,8 +68,8 @@ def gif(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = strftimecode(start_timecode)
-    end = strftimecode(end_timecode)
+    start = Timecode.strftimecode(start_timecode)
+    end = Timecode.strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -97,8 +97,8 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = strftimecode(start_timecode)
-    end = strftimecode(end_timecode)
+    start = Timecode.strftimecode(start_timecode)
+    end = Timecode.strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -126,8 +126,8 @@ def webm(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = strftimecode(start_timecode)
-    end = strftimecode(end_timecode)
+    start = Timecode.strftimecode(start_timecode)
+    end = Timecode.strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -153,8 +153,8 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     # Check timecodes
     if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
         return http_error(400, 'invalid timecode format')
-    start = strftimecode(start_timecode)
-    end = strftimecode(end_timecode)
+    start = Timecode.strftimecode(start_timecode)
+    end = Timecode.strftimecode(end_timecode)
     if not timecode_in_episode(start, matched_episode):
         return http_error(416, 'start time out of range')
     elif not timecode_in_episode(end, matched_episode):
@@ -181,9 +181,7 @@ def subtitles(season, episode):
     elif matched_episode.subtitles_path is None:
         return http_error(404, 'no subtitles available')
     # Return json object
-    subtitle_to_js = lambda s: { 'start': strptimecode(s.start),
-                                 'end': strptimecode(s.end),
-                                 'text': s.content }
+    subtitle_to_js = lambda s: { 'start': s.start, 'end': s.end, 'text': s.content }
     data = json.dumps([subtitle_to_js(s) for s in matched_episode.subtitles])
     response = flask.make_response(data)
     response.headers.set('Content-type', 'application/json')
@@ -193,7 +191,7 @@ def timecode_valid(timecode):
     return re.match(r'^(\d?\d:)?[0-5]?\d:[0-5]?\d(\.\d\d?\d?)?$', timecode)
 
 def timecode_in_episode(timecode, episode):
-    return timecode >= timedelta(0) and timecode <= episode.duration
+    return timecode >= Timecode(0) and timecode <= episode.duration
 
 def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config

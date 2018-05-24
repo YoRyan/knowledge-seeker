@@ -14,9 +14,23 @@
                         <img width="720" height="480" alt="" src="pic">
                 </div>
                 <div>
-                        <span class="surrounding-line">{{ previous_line|safe }}</span>
-                        <span id="this-line">{{ this_line|safe }}</span>
-                        <span class="surrounding-line">{{ next_line|safe }}</span>
+                        <input readonly value="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}">
+                </div>
+                <div>
+                        {% for subtitle in subtitles_before %}
+                        <span class="surrounding-line">{{ subtitle.content|safe }}</span>
+                        {% endfor %}
+                        {% if current_subtitle is not none %}
+                        <span id="this-line">{{ current_subtitle.content|safe }}</span>
+                        {% endif %}
+                        {% for subtitle in subtitles_after %}
+                        <span class="surrounding-line">{{ subtitle.content|safe }}</span>
+                        {% endfor %}
+                </div>
+                <div>
+                        {% for step in time_steps %}
+                        <span class="nav-moment {{ step.class }}"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step.time) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step.time) }}"></a></span>
+                        {% endfor %}
                 </div>
         </section>
 </body>
