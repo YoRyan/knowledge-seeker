@@ -71,9 +71,9 @@ def strptimecode(td):
 
 def close_subtitles(episode, timecode):
     RANGE = timedelta(seconds=5)
-    surrounding = filter(lambda subtitle: (subtitle.start >= timecode - RANGE and
-                                           subtitle.end <= timecode + RANGE),
-                         episode.subtitles)
+    surrounding = [subtitle for subtitle in episode.subtitles
+                   if (subtitle.start >= timecode - RANGE and
+                       subtitle.end <= timecode + RANGE)]
     intersecting = [subtitle for subtitle in surrounding
                     if subtitle.start <= timecode and subtitle.end >= timecode]
     if len(intersecting) > 0:
