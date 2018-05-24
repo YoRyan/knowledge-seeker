@@ -3,11 +3,11 @@
 
 {% block title %}
 {% if first_line is none %}
-{{ season.name }} - {{ episode.name }}
+{{ episode.name }} - {{ season.name }}
 {% elif (second_line is none or first_line == second_line) %}
-{{ season.name}} - {{ episode.name }} - "{{ first_line }}"
+"{{ first_line }}" - {{ episode.name }} - {{ season.name }}
 {% else %}
-{{ season.name}} - {{ episode.name }} - "{{ first_line }}" / "{{ second_line }}"
+"{{ first_line }}" / "{{ second_line }}" - {{ episode.name }} - {{ season.name }}
 {% endif %}
 {% endblock %}
 

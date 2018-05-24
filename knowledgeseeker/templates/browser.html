@@ -4,7 +4,7 @@
 </div>
 <div>
         <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG</a>
-        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG + SUB</a>
+        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG + Sub</a>
 </div>
 <div>
         {% for subtitle in subtitles %}
