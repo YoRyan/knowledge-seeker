@@ -2,17 +2,18 @@ import flask
 import re
 from datetime import timedelta
 
-from .utils import Timecode, match_season_episode, parse_timecode, http_error
+from .utils import (Timecode, match_season_episode, episode_has_subtitles,
+                    parse_timecode, http_error)
 
 bp = flask.Blueprint('explorer', __name__)
 
 @bp.route('/<season>/<episode>/')
 @match_season_episode
+@episode_has_subtitles
 def browse_episode(season, episode):
-    subtitles = episode.subtitles
     rendered_subtitles = []
     last_subtitle = None
-    for s in subtitles:
+    for s in episode.subtitles:
         if last_subtitle is not None:
             time_since_last = (s.start - last_subtitle.start).total_seconds()
         else:
@@ -35,30 +36,51 @@ def browse_episode(season, episode):
 @match_season_episode
 @parse_timecode('timecode')
 def browse_moment(season, episode, timecode):
-    subtitles, current_line = close_subtitles(episode, timecode)
-    return flask.render_template('moment.html',
-                                 season=season,
-                                 episode=episode,
-                                 timecode=timecode,
-                                 subtitles=subtitles,
-                                 current_line=current_line,
-                                 step_times=step_times(episode, timecode))
+    kwargs = {}
+    kwargs['season'] = season
+    kwargs['episode'] = episode
+    kwargs['timecode'] = timecode
+    # surrounding subtitles
+    subtitles = surrounding_subtitles(episode, timecode)
+    render = lambda subtitle: { 'start': subtitle.start,
+                                'end': subtitle.end,
+                                'timecode': Timecode.from_timedelta((subtitle.start + subtitle.end)/2),
+                                'content': subtitle.content }
+    kwargs['subtitles'] = [render(subtitle) for subtitle in subtitles]
+    # page title
+    kwargs['current_line'] = current_line(episode, timecode)
+    # navigation previews
+    kwargs['step_times'] = step_times(episode, timecode)
+    # render template
+    return flask.render_template('moment.html', **kwargs)
 
 @bp.route('/<season>/<episode>/<first_timecode>/<second_timecode>/')
 @match_season_episode
 @parse_timecode('first_timecode')
 @parse_timecode('second_timecode')
 def browse_dual_moments(season, episode, first_timecode, second_timecode):
-    first_subtitles, first_line = close_subtitles(episode, first_timecode)
-    second_subtitles, second_line = close_subtitles(episode, second_timecode)
-    return flask.render_template('dual_moments.html',
-                                 season=season,
-                                 episode=episode,
-                                 first_timecode=first_timecode, second_timecode=second_timecode,
-                                 first_subtitles=first_subtitles, second_subtitles=second_subtitles,
-                                 first_line=first_line, second_line=second_line,
-                                 first_step_times=step_times(episode, first_timecode),
-                                 second_step_times=step_times(episode, second_timecode))
+    kwargs = {}
+    kwargs['season'] = season
+    kwargs['episode'] = episode
+    kwargs['first_timecode'] = first_timecode
+    kwargs['second_timecode'] = second_timecode
+    # surrounding subtitles
+    first_subtitles = surrounding_subtitles(episode, first_timecode)
+    second_subtitles = surrounding_subtitles(episode, second_timecode)
+    render = lambda subtitle: { 'start': subtitle.start,
+                                'end': subtitle.end,
+                                'timecode': Timecode.from_timedelta((subtitle.start + subtitle.end)/2),
+                                'content': subtitle.content }
+    kwargs['first_subtitles'] = [render(subtitle) for subtitle in first_subtitles]
+    kwargs['second_subtitles'] = [render(subtitle) for subtitle in second_subtitles]
+    # page title
+    kwargs['first_line'] = current_line(episode, first_timecode)
+    kwargs['second_line'] = current_line(episode, second_timecode)
+    # navigation previews
+    kwargs['first_step_times'] = step_times(episode, first_timecode)
+    kwargs['second_step_times'] = step_times(episode, second_timecode)
+    # render template
+    return flask.render_template('dual_moments.html', **kwargs)
 
 def strptimecode(td):
     hours = td.total_seconds() // 60 // 60
@@ -69,19 +91,20 @@ def strptimecode(td):
     else:
         return '%d:%02d' % (minutes, seconds)
 
-def close_subtitles(episode, timecode):
+def surrounding_subtitles(episode, timecode):
     RANGE = timedelta(seconds=5)
     surrounding = [subtitle for subtitle in episode.subtitles
                    if (subtitle.start >= timecode - RANGE and
                        subtitle.end <= timecode + RANGE)]
-    intersecting = [subtitle for subtitle in surrounding
+    return surrounding
+
+def current_line(episode, timecode):
+    intersecting = [subtitle for subtitle in episode.subtitles
                     if subtitle.start <= timecode and subtitle.end >= timecode]
     if len(intersecting) > 0:
-        # Remove any HTML
-        current_line = re.sub(r'</?[^>]+>', '', intersecting[0].content).strip()
-        return surrounding, current_line
+        return re.sub(r'</?[^>]+>', '', intersecting[0].content).strip()
     else:
-        return surrounding, None
+        return None
 
 def step_times(episode, timecode):
     TIME_STEPS = [timedelta(seconds=0.1),
