@@ -49,8 +49,10 @@ def make_gif(video_path, start_time, end_time, vres=360):
     gstream = ffmpeg.input(video_path,
                            ss=start_time)
     gstream = ffmpeg.filter_(gstream, 'scale', -1, vres, 'lanczos')
-    gstream_kwargs = { 'dither': 'bayer', 'bayer_scale': 5, 'diff_mode': 'rectangle' }
-    gstream = ffmpeg_paletteuse_filter(gstream, pstream, **gstream_kwargs)
+    gstream = ffmpeg_paletteuse_filter(gstream, pstream,
+                                       dither='bayer',
+                                       bayer_scale=5,
+                                       diff_mode='rectangle')
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
                             t=duration.total_seconds())
@@ -74,10 +76,12 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
     gstream = ffmpeg.input(video_path,
                            ss=start_time)
     gstream = ffmpeg.filter_(gstream, 'scale', -1, vres, 'lanczos')
-    gstream_kwargs = { 'dither': 'bayer', 'bayer_scale': 5, 'diff_mode': 'rectangle' }
     gstream = ffmpeg_subtitles_filter(gstream, subtitle_path, start_time,
                                       fonts_path=fonts_path, font=font)
-    gstream = ffmpeg_paletteuse_filter(gstream, pstream, **gstream_kwargs)
+    gstream = ffmpeg_paletteuse_filter(gstream, pstream,
+                                       dither='bayer',
+                                       bayer_scale=5,
+                                       diff_mode='rectangle')
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
                             t=duration.total_seconds())
