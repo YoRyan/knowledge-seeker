@@ -39,13 +39,13 @@ def browse_moment(season, episode, timecode):
     RANGE = timedelta(seconds=5)
     subtitles = [s for s in episode.subtitles
                  if s.start >= timecode - RANGE and s.end <= timecode + RANGE]
+    # Extract current subtitle, if any
     matched_subtitles = [s for s in subtitles
                          if s.start <= timecode and s.end >= timecode]
     if len(matched_subtitles) > 0:
-        title = '%s - %s - "%s"' % (season.name, episode.name,
-                                    re.sub(r'</?[^>]+>', '', matched_subtitles[0].content))
+        current_line = re.sub(r'</?[^>]+>', '', matched_subtitles[0].content)
     else:
-        title = '%s - %s' % (season.name, episode.name)
+        current_line = None
     # Create navigation previews
     TIME_STEPS = [timedelta(seconds=0.1),
                   timedelta(seconds=0.2),
@@ -58,7 +58,7 @@ def browse_moment(season, episode, timecode):
                         step_times)
     # Prepare response
     return flask.render_template('moment.html',
-                                 title=title,
+                                 current_line=current_line,
                                  season=season,
                                  episode=episode,
                                  timecode=timecode,

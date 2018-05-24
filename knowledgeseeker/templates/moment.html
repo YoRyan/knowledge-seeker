@@ -1,7 +1,9 @@
 {% import 'browser.html' as browser %}
 {% extends 'base.html' %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}
+{% if current_line is none %}{{ season.name }} - {{ episode.name }}{% else %}{{ season.name}} - {{ episode.name }} - {{ current_line }}{% endif %}
+{% endblock %}
 
 {% block content %}
 <nav>
