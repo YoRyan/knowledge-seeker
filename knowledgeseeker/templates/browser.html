@@ -3,8 +3,8 @@
         <img width="720" height="480" alt="" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}">
 </div>
 <div>
-        <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link image" target="_blank">JPEG</a>
-        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link image" target="_blank">JPEG + SUB</a>
+        <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG</a>
+        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG + SUB</a>
 </div>
 <div>
         {% for subtitle in subtitles %}

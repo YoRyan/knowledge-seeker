@@ -35,35 +35,30 @@ def browse_episode(season, episode):
 @match_season_episode
 @parse_timecode('timecode')
 def browse_moment(season, episode, timecode):
-    # Locate relevant subtitles
-    RANGE = timedelta(seconds=5)
-    subtitles = [s for s in episode.subtitles
-                 if s.start >= timecode - RANGE and s.end <= timecode + RANGE]
-    # Extract current subtitle, if any
-    matched_subtitles = [s for s in subtitles
-                         if s.start <= timecode and s.end >= timecode]
-    if len(matched_subtitles) > 0:
-        current_line = re.sub(r'</?[^>]+>', '', matched_subtitles[0].content)
-    else:
-        current_line = None
-    # Create navigation previews
-    TIME_STEPS = [timedelta(seconds=0.1),
-                  timedelta(seconds=0.2),
-                  timedelta(seconds=0.5),
-                  timedelta(seconds=1)]
-    step_times = ([Timecode.from_timedelta(timecode - td) for td in reversed(TIME_STEPS)] +
-                  [timecode] +
-                  [Timecode.from_timedelta(timecode + td) for td in TIME_STEPS])
-    step_times = filter(lambda t: t >= Timecode(0) and t <= episode.duration,
-                        step_times)
-    # Prepare response
+    subtitles, current_line = close_subtitles(episode, timecode)
     return flask.render_template('moment.html',
-                                 current_line=current_line,
                                  season=season,
                                  episode=episode,
                                  timecode=timecode,
                                  subtitles=subtitles,
-                                 step_times=step_times)
+                                 current_line=current_line,
+                                 step_times=step_times(episode, timecode))
+
+@bp.route('/<season>/<episode>/<first_timecode>/<second_timecode>/')
+@match_season_episode
+@parse_timecode('first_timecode')
+@parse_timecode('second_timecode')
+def browse_dual_moments(season, episode, first_timecode, second_timecode):
+    first_subtitles, first_line = close_subtitles(episode, first_timecode)
+    second_subtitles, second_line = close_subtitles(episode, second_timecode)
+    return flask.render_template('dual_moments.html',
+                                 season=season,
+                                 episode=episode,
+                                 first_timecode=first_timecode, second_timecode=second_timecode,
+                                 first_subtitles=first_subtitles, second_subtitles=second_subtitles,
+                                 first_line=first_line, second_line=second_line,
+                                 first_step_times=step_times(episode, first_timecode),
+                                 second_step_times=step_times(episode, second_timecode))
 
 def strptimecode(td):
     hours = td.total_seconds() // 60 // 60
@@ -73,4 +68,28 @@ def strptimecode(td):
         return '%d:%02d:%02d' % (hours, minutes, seconds)
     else:
         return '%d:%02d' % (minutes, seconds)
+
+def close_subtitles(episode, timecode):
+    RANGE = timedelta(seconds=5)
+    surrounding = filter(lambda subtitle: (subtitle.start >= timecode - RANGE and
+                                           subtitle.end <= timecode + RANGE),
+                         episode.subtitles)
+    intersecting = [subtitle for subtitle in surrounding
+                    if subtitle.start <= timecode and subtitle.end >= timecode]
+    if len(intersecting) > 0:
+        # Remove any HTML
+        current_line = re.sub(r'</?[^>]+>', '', intersecting[0].content).strip()
+        return surrounding, current_line
+    else:
+        return surrounding, None
+
+def step_times(episode, timecode):
+    TIME_STEPS = [timedelta(seconds=0.1),
+                  timedelta(seconds=0.2),
+                  timedelta(seconds=0.5),
+                  timedelta(seconds=1)]
+    step_times = ([Timecode.from_timedelta(timecode - td) for td in reversed(TIME_STEPS)] +
+                  [timecode] +
+                  [Timecode.from_timedelta(timecode + td) for td in TIME_STEPS])
+    return filter(lambda t: t >= Timecode(0) and t <= episode.duration, step_times)
 

@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-{% if current_line is none %}{{ season.name }} - {{ episode.name }}{% else %}{{ season.name}} - {{ episode.name }} - {{ current_line }}{% endif %}
+{% if current_line is none %}{{ season.name }} - {{ episode.name }}{% else %}{{ season.name}} - {{ episode.name }} - "{{ current_line }}"{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
         <h1><a href="../..">{{ season.name }}</a> |
             <a href="..">{{ episode.name }}</a></h1>
 </nav>
-<section>
+<section id="browser">
         {{ browser.show_time(season, episode, timecode, subtitles) }}
         <div>
                 {% for step in step_times %}
@@ -23,5 +23,8 @@
                 {% endif %}
                 {% endfor %}
         </div>
+</section>
+<section id="dual-controls">
+        <a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=timecode, second_timecode=timecode) }}">Split</a>
 </section>
 {% endblock %}

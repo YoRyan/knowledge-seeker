@@ -1,0 +1,54 @@
+{% import 'browser.html' as browser %}
+{% extends 'base.html' %}
+
+{% block title %}
+{% if first_line is none %}
+{{ season.name }} - {{ episode.name }}
+{% elif (second_line is none or first_line == second_line) %}
+{{ season.name}} - {{ episode.name }} - "{{ first_line }}"
+{% else %}
+{{ season.name}} - {{ episode.name }} - "{{ first_line }}" / "{{ second_line }}"
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<nav>
+        <h1><a href="../..">{{ season.name }}</a> |
+            <a href="..">{{ episode.name }}</a></h1>
+</nav>
+<section id="first-browser">
+        {{ browser.show_time(season, episode, first_timecode, first_subtitles) }}
+        <div>
+                {% for step in first_step_times %}
+                {% if step == first_timecode %}
+                <span class="nav-moment now"><a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=step, second_timecode=second_timecode) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% elif step < first_timecode %}
+                <span class="nav-moment {{ (first_timecode - step).total_seconds() }}s before"><a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=step, second_timecode=second_timecode) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% else %}
+                <span class="nav-moment {{ (step - first_timecode).total_seconds() }}s after"><a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=step, second_timecode=second_timecode) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% endif %}
+                {% endfor %}
+        </div>
+</section>
+<section id="second-browser">
+        {{ browser.show_time(season, episode, second_timecode, second_subtitles) }}
+        <div>
+                {% for step in second_step_times %}
+                {% if step == second_timecode %}
+                <span class="nav-moment now"><a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% elif step < second_timecode %}
+                <span class="nav-moment {{ (second_timecode - step).total_seconds() }}s before"><a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% else %}
+                <span class="nav-moment {{ (step - second_timecode).total_seconds() }}s after"><a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% endif %}
+                {% endfor %}
+        </div>
+</section>
+<section id="dual-controls">
+        <a href="{{ url_for('clipper.gif', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF</a>
+        <a href="{{ url_for('clipper.gif_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF + Sub</a>
+        <a href="{{ url_for('clipper.webm', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM</a>
+        <a href="{{ url_for('clipper.webm_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM + Sub</a>
+        <a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=first_timecode) }}">Single View</a>
+</section>
+{% endblock %}
