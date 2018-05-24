@@ -7,7 +7,8 @@ from os import environ
 from pathlib import Path
 
 from . import cache
-from .utils import Timecode, find_episode, http_error
+from .utils import (Timecode, match_season_episode, episode_has_subtitles,
+                    parse_timecode, check_timecode_range, http_error)
 from .video import (make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
@@ -19,179 +20,93 @@ GIF_VRES = 360
 bp = flask.Blueprint('clipper', __name__)
 
 @bp.route('/<season>/<episode>/<timecode>/pic')
+@match_season_episode
+@parse_timecode('timecode')
 def snapshot(season, episode, timecode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    # Check timecodes
-    if not timecode_valid(timecode):
-        return http_error(400, 'invalid timecode format')
-    time = Timecode.strftimecode(timecode)
-    if not timecode_in_episode(time, matched_episode):
-        return http_error(416, 'timecode out of range')
-    # Prepare response
-    data = make_snapshot(matched_episode.video_path, time)
+    data = make_snapshot(episode.video_path, timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/jpeg')
     return response
 
 @bp.route('/<season>/<episode>/<timecode>/pic/sub')
+@match_season_episode
+@episode_has_subtitles
+@parse_timecode('timecode')
 def snapshot_with_subtitles(season, episode, timecode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    elif matched_episode.subtitles_path is None:
-        return http_error(404, 'no subtitles available')
-    # Check timecodes
-    if not timecode_valid(timecode):
-        return http_error(400, 'invalid timecode format')
-    time = Timecode.strftimecode(timecode)
-    if not timecode_in_episode(time, matched_episode):
-        return http_error(416, 'timecode out of range')
-    # Prepare response
     data = call_with_fonts(make_snapshot_with_subtitles,
-                           matched_episode.video_path,
-                           matched_episode.subtitles_path, time)
+                           episode.video_path,
+                           episode.subtitles_path, timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/jpeg')
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
 @cache.cached(timeout=None)
+@match_season_episode
+@parse_timecode('start_timecode')
+@parse_timecode('end_timecode')
+@check_timecode_range('start_timecode', 'end_timecode',
+                      timedelta(seconds=MAX_GIF_SECS))
 def gif(season, episode, start_timecode, end_timecode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    # Check timecodes
-    if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
-        return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
-    if not timecode_in_episode(start, matched_episode):
-        return http_error(416, 'start time out of range')
-    elif not timecode_in_episode(end, matched_episode):
-        # Fail gracefully; set the end marker to the end of the episode
-        end = matched_episode.duration
-    if start >= end:
-        return http_error(400, 'bad time range')
-    elif end - start > timedelta(seconds=MAX_GIF_SECS):
-        return http_error(416, 'requested time range exceeds maximum limit')
-    # Prepare response
-    data = make_gif(matched_episode.video_path, start, end)
+    data = make_gif(episode.video_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
 @cache.cached(timeout=None)
+@match_season_episode
+@episode_has_subtitles
+@parse_timecode('start_timecode')
+@parse_timecode('end_timecode')
+@check_timecode_range('start_timecode', 'end_timecode',
+                      timedelta(seconds=MAX_GIF_SECS))
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    elif matched_episode.subtitles_path is None:
-        return http_error(404, 'no subtitles available')
-    # Check timecodes
-    if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
-        return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
-    if not timecode_in_episode(start, matched_episode):
-        return http_error(416, 'start time out of range')
-    elif not timecode_in_episode(end, matched_episode):
-        # Fail gracefully; set the end marker to the end of the episode
-        end = matched_episode.duration
-    if start >= end:
-        return http_error(400, 'bad time range')
-    elif end - start > timedelta(seconds=MAX_GIF_SECS):
-        return http_error(416, 'requested time range exceeds maximum limit')
-    # Prepare response
     data = call_with_fonts(make_gif_with_subtitles,
-                           matched_episode.video_path,
-                           matched_episode.subtitles_path, start, end)
+                           episode.video_path,
+                           episode.subtitles_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm')
 @cache.cached(timeout=None)
+@match_season_episode
+@parse_timecode('start_timecode')
+@parse_timecode('end_timecode')
+@check_timecode_range('start_timecode', 'end_timecode',
+                      timedelta(seconds=MAX_WEBM_SECS))
 def webm(season, episode, start_timecode, end_timecode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    # Check timecodes
-    if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
-        return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
-    if not timecode_in_episode(start, matched_episode):
-        return http_error(416, 'start time out of range')
-    elif not timecode_in_episode(end, matched_episode):
-        # Fail gracefully; set the end marker to the end of the episode
-        end = matched_episode.duration
-    if start >= end:
-        return http_error(400, 'bad time range')
-    elif end - start > timedelta(seconds=MAX_WEBM_SECS):
-        return http_error(416, 'requested time range exceeds maximum limit')
-    # Prepare response
-    data = make_webm(matched_episode.video_path, start, end)
+    data = make_webm(episode.video_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm/sub')
 @cache.cached(timeout=None)
+@match_season_episode
+@episode_has_subtitles
+@parse_timecode('start_timecode')
+@parse_timecode('end_timecode')
+@check_timecode_range('start_timecode', 'end_timecode',
+                      timedelta(seconds=MAX_WEBM_SECS))
 def webm_with_subtitles(season, episode, start_timecode, end_timecode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    # Check timecodes
-    if not timecode_valid(start_timecode) or not timecode_valid(end_timecode):
-        return http_error(400, 'invalid timecode format')
-    start = Timecode.strftimecode(start_timecode)
-    end = Timecode.strftimecode(end_timecode)
-    if not timecode_in_episode(start, matched_episode):
-        return http_error(416, 'start time out of range')
-    elif not timecode_in_episode(end, matched_episode):
-        # Fail gracefully; set the end marker to the end of the episode
-        end = matched_episode.duration
-    if start >= end:
-        return http_error(400, 'bad time range')
-    elif end - start > timedelta(seconds=MAX_WEBM_SECS):
-        return http_error(416, 'requested time range exceeds maximum limit')
-    # Prepare response
     data = call_with_fonts(make_webm_with_subtitles,
-                           matched_episode.video_path,
-                           matched_episode.subtitles_path, start, end)
+                           episode.video_path,
+                           episode.subtitles_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
     return response
 
 @bp.route('/<season>/<episode>/subtitles')
+@match_season_episode
+@episode_has_subtitles
 def subtitles(season, episode):
-    # Find episode
-    matched_season, matched_episode = find_episode(season, episode)
-    if matched_episode is None:
-        return http_error(404, 'season/episode not found')
-    elif matched_episode.subtitles_path is None:
-        return http_error(404, 'no subtitles available')
-    # Return json object
     subtitle_to_js = lambda s: { 'start': s.start, 'end': s.end, 'text': s.content }
-    data = json.dumps([subtitle_to_js(s) for s in matched_episode.subtitles])
+    data = json.dumps([subtitle_to_js(s) for s in episode.subtitles])
     response = flask.make_response(data)
     response.headers.set('Content-type', 'application/json')
     return response
-
-def timecode_valid(timecode):
-    return re.match(r'^(\d?\d:)?[0-5]?\d:[0-5]?\d(\.\d\d?\d?)?$', timecode)
-
-def timecode_in_episode(timecode, episode):
-    return timecode >= Timecode(0) and timecode <= episode.duration
 
 def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config
