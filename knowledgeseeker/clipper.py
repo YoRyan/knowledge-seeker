@@ -98,16 +98,6 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     response.headers.set('Content-Type', 'video/webm')
     return response
 
-@bp.route('/<season>/<episode>/subtitles')
-@match_season_episode
-@episode_has_subtitles
-def subtitles(season, episode):
-    subtitle_to_js = lambda s: { 'start': s.start, 'end': s.end, 'text': s.content }
-    data = json.dumps([subtitle_to_js(s) for s in episode.subtitles])
-    response = flask.make_response(data)
-    response.headers.set('Content-type', 'application/json')
-    return response
-
 def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config
     if 'SUBTITLES_FONT' in app_config:
