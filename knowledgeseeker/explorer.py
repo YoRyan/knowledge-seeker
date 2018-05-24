@@ -114,7 +114,7 @@ def render_time_steps(episode, current_time):
         else:
             return '%.1fs after' % diff
 
-    times = [Timecode.from_timedelta(current_time - td) for td in TIME_STEPS]
+    times = [Timecode.from_timedelta(current_time - td) for td in reversed(TIME_STEPS)]
     times += [current_time]
     times += [Timecode.from_timedelta(current_time + td) for td in TIME_STEPS]
     times = filter(lambda t: t >= Timecode(0) and t <= episode.duration, times)
