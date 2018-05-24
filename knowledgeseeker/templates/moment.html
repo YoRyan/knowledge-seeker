@@ -15,9 +15,15 @@
             <a href="..">{{ episode.name }}</a></h1>
 </nav>
 <section id="browser">
-        {% call(nav_time) browser.show_time(season, episode, timecode, subtitles, step_times) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
+        <div>
+                {% call(nav_time) browser.show_time(season, episode, timecode, subtitles, step_times) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
+        </div>
 </section>
 <section id="dual-controls">
-        <a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=timecode, second_timecode=timecode) }}">Split</a>
+        <a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=timecode, second_timecode=timecode) }}" class="media-link" id="dual-split">Split View</a>
+        <span class="media-link disabled">GIF</span>
+        <span class="media-link disabled">GIF+Sub</span>
+        <span class="media-link disabled">WEBM</span>
+        <span class="media-link disabled">WEBM+Sub</span>
 </section>
 {% endblock %}

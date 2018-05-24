@@ -16,17 +16,19 @@
         <h1><a href="../..">{{ season.name }}</a> |
             <a href="..">{{ episode.name }}</a></h1>
 </nav>
-<section id="first-browser">
-        {% call(nav_time) browser.show_time(season, episode, first_timecode, first_subtitles, first_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=nav_time, second_timecode=second_timecode) }}{% endcall %}
-</section>
-<section id="second-browser">
-        {% call(nav_time) browser.show_time(season, episode, second_timecode, second_subtitles, second_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=nav_time) }}{% endcall %}
+<section id="browser">
+        <div id="first-browser">
+                {% call(nav_time) browser.show_time(season, episode, first_timecode, first_subtitles, first_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=nav_time, second_timecode=second_timecode) }}{% endcall %}
+        </div>
+        <div id="second-browser">
+                {% call(nav_time) browser.show_time(season, episode, second_timecode, second_subtitles, second_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=nav_time) }}{% endcall %}
+        </div>
 </section>
 <section id="dual-controls">
+        <a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=first_timecode) }}" class="media-link" id="dual-split">Single View</a>
         <a href="{{ url_for('clipper.gif', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF</a>
-        <a href="{{ url_for('clipper.gif_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF + Sub</a>
+        <a href="{{ url_for('clipper.gif_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF+Sub</a>
         <a href="{{ url_for('clipper.webm', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM</a>
-        <a href="{{ url_for('clipper.webm_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM + Sub</a>
-        <a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=first_timecode) }}">Single View</a>
+        <a href="{{ url_for('clipper.webm_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM+Sub</a>
 </section>
 {% endblock %}
