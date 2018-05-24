@@ -9,15 +9,15 @@
             <a href="..">{{ episode.name }}</a></h1>
 </nav>
 <section>
-        {{ browser.show_time(season, episode, time, subtitles) }}
+        {{ browser.show_time(season, episode, timecode, subtitles) }}
         <div>
                 {% for step in step_times %}
-                {% if step == time %}
+                {% if step == timecode %}
                 <span class="nav-moment now"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
-                {% elif step < time %}
-                <span class="nav-moment {{ (time - step).total_seconds() }}s before"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% elif step < timecode %}
+                <span class="nav-moment {{ (timecode - step).total_seconds() }}s before"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
                 {% else %}
-                <span class="nav-moment {{ (step - time).total_seconds() }}s after"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                <span class="nav-moment {{ (step - timecode).total_seconds() }}s after"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
                 {% endif %}
                 {% endfor %}
         </div>

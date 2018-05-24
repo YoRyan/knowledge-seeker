@@ -61,7 +61,7 @@ def browse_moment(season, episode, timecode):
                                  title=title,
                                  season=season,
                                  episode=episode,
-                                 time=timecode,
+                                 timecode=timecode,
                                  subtitles=subtitles,
                                  step_times=step_times)
 
