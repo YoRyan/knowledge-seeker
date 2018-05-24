@@ -1,0 +1,31 @@
+{% macro browse(season, episode, time, subtitles, step_times) -%}
+<section>
+        <div>
+                <img width="720" height="480" alt="" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=time) }}">
+        </div>
+        <div>
+                <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=time) }}" class="media-link image" target="_blank">JPEG</a>
+                <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=time) }}" class="media-link image" target="_blank">JPEG + SUB</a>
+        </div>
+        <div>
+                {% for subtitle in subtitles %}
+                {% if subtitle.start <= time and subtitle.end >= time %}
+                <span id="this-line">{{ subtitle.content|safe }}</span>
+                {% else %}
+                <span class="surrounding-line">{{ subtitle.content|safe }}</span>
+                {% endif %}
+                {% endfor %}
+        </div>
+        <div>
+                {% for step in step_times %}
+                {% if step == time %}
+                <span class="nav-moment now"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% elif step < time %}
+                <span class="nav-moment {{ (time - step).total_seconds() }}s before"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% else %}
+                <span class="nav-moment {{ (step - time).total_seconds() }}s after"><a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=step) }}"><img width="150" height="100" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a></span>
+                {% endif %}
+                {% endfor %}
+        </div>
+</section>
+{%- endmacro %}

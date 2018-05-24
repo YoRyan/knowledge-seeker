@@ -50,23 +50,34 @@ def browse_moment(season, episode, timecode):
     if not timecode_in_episode(time, matched_episode):
         return http_error(416, 'timecode out of range')
     # Locate relevant subtitles
-    subtitles_before, current_subtitle, subtitles_after = surrounding_subtitles(
-            matched_episode.subtitles, time)
-    if current_subtitle is not None:
+    RANGE = timedelta(seconds=5)
+    subtitles = [s for s in matched_episode.subtitles
+                 if s.start >= time - RANGE and s.end <= time + RANGE]
+    matched_subtitles = [s for s in subtitles
+                         if s.start <= time and s.end >= time]
+    if len(matched_subtitles) > 0:
         title = '%s - %s - "%s"' % (matched_season.name, matched_episode.name,
-                                    re.sub(r'</?[^>]+>', '', current_subtitle.content))
+                                    re.sub(r'</?[^>]+>', '', matched_subtitles[0].content))
     else:
         title = '%s - %s' % (matched_season.name, matched_episode.name)
+    # Create navigation previews
+    TIME_STEPS = [timedelta(seconds=0.1),
+                  timedelta(seconds=0.2),
+                  timedelta(seconds=0.5),
+                  timedelta(seconds=1)]
+    step_times = ([Timecode.from_timedelta(time - td) for td in reversed(TIME_STEPS)] +
+                  [time] +
+                  [Timecode.from_timedelta(time + td) for td in TIME_STEPS])
+    step_times = filter(lambda t: t >= Timecode(0) and t <= matched_episode.duration,
+                        step_times)
     # Prepare response
     return flask.render_template('moment.html',
+                                 title=title,
                                  season=matched_season,
                                  episode=matched_episode,
-                                 title=title,
-                                 timecode=time,
-                                 time_steps=render_time_steps(matched_episode, time),
-                                 subtitles_before=subtitles_before,
-                                 current_subtitle=current_subtitle,
-                                 subtitles_after=subtitles_after)
+                                 time=time,
+                                 subtitles=subtitles,
+                                 step_times=step_times)
 
 def strptimecode(td):
     hours = td.total_seconds() // 60 // 60
@@ -76,47 +87,4 @@ def strptimecode(td):
         return '%d:%02d:%02d' % (hours, minutes, seconds)
     else:
         return '%d:%02d' % (minutes, seconds)
-
-def surrounding_subtitles(subtitles, time):
-    RANGE = timedelta(seconds=5)
-
-    # TODO: could do this faster than O(n) with a tree-based lookup or whatever
-    surrounding = [s for s in subtitles
-                   if s.start >= time - RANGE and s.end <= time + RANGE]
-    intersecting = [s for s in surrounding
-                    if s.start <= time and s.end >= time]
-
-    if len(intersecting) > 0:
-        current = intersecting[0]
-    else:
-        current = None
-    if current is None:
-        before = [s for s in surrounding if s.start < time]
-    else:
-        # s != current broken in srt
-        before = [s for s in surrounding if s.start < time and s.start != current.start]
-    after = [s for s in surrounding if s.start > time]
-
-    return before, current, after
-
-def render_time_steps(episode, current_time):
-    TIME_STEPS = [timedelta(seconds=0.1),
-                  timedelta(seconds=0.2),
-                  timedelta(seconds=0.5),
-                  timedelta(seconds=1)]
-
-    def time_class(td):
-        diff = (td - current_time).total_seconds()
-        if diff == 0:
-            return 'now'
-        elif diff < 0:
-            return '%.1fs before' % abs(diff)
-        else:
-            return '%.1fs after' % diff
-
-    times = [Timecode.from_timedelta(current_time - td) for td in reversed(TIME_STEPS)]
-    times += [current_time]
-    times += [Timecode.from_timedelta(current_time + td) for td in TIME_STEPS]
-    times = filter(lambda t: t >= Timecode(0) and t <= episode.duration, times)
-    return [{ 'time': t, 'class': time_class(t) } for t in times]
 
