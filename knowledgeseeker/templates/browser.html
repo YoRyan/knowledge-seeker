@@ -11,7 +11,7 @@
         {% if subtitle.start <= timecode and subtitle.end >= timecode %}
         <span id="this-line">{{ subtitle.content|safe }}</span>
         {% else %}
-        <span class="surrounding-line">{{ subtitle.content|safe }}</span>
+        <span class="surrounding-line"><a href="{{ caller(subtitle.timecode) }}">{{ subtitle.content|safe }}</a></span>
         {% endif %}
         {% endfor %}
 </div>
