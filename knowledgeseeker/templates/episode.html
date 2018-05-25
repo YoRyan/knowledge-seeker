@@ -7,15 +7,13 @@
 {% block content %}
 <section id="episode-guide">
         {% for subtitle in subtitles %}
-        <div class="subtitle" style="margin-top: {{ subtitle.time_since_last }}rem;">
-                <a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=subtitle.timecode) }}">
-                        <span class="subtitle-image">
-                                <img width="150" height="100" alt="" src="/{{ season.slug }}/{{ episode.slug }}/{{ subtitle.timecode }}/pic">
-                        </span>
-                        <span class="subtitle-range">{{ subtitle.range }}</span>
-                        <span class="subtitle-text">{{ subtitle.text|safe }}</span>
-                </a>
-        </div>
+        <a class="subtitle" style="margin-top: {{ subtitle.time_since_last }}rem;" href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=subtitle.timecode) }}">
+                <span class="image-timecode-wrap">
+                        <img class="image" alt="" src="/{{ season.slug }}/{{ episode.slug }}/{{ subtitle.timecode }}/pic">
+                        <span class="timecode subtitle-range">{{ subtitle.range }}</span>
+                </span>
+                <span class="subtitle-text">{{ subtitle.text|safe }}</span>
+        </a>
         {% endfor %}
 </section>
 {% endblock %}

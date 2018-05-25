@@ -13,11 +13,33 @@ body {
         color: black;
         background-color: white;
 }
+body > section {
+        padding: 1rem;
+}
 a:visited, a:link {
         color: #2a2a2a;
 }
 a:hover, a:focus {
         color: black;
+}
+.image-timecode-wrap {
+        position: relative;
+        display: inline-block;
+        width: 8rem;
+}
+.image-timecode-wrap > img {
+        display: block;
+        width: 100%;
+        height: auto;
+}
+.image-timecode-wrap > .timecode {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: black;
+        color: white;
+        text-align: center;
 }
 
 /* common header */
@@ -31,6 +53,26 @@ nav > h1 {
 nav > #header-rightside {
         text-align: right;
         font-size: 2rem;
+}
+
+/* episode page */
+#episode-guide .subtitle,
+#season-guide .episode {
+        display: block;
+        text-decoration: none;
+}
+#season-guide .episode {
+        margin: 0.5rem 0;
+}
+#episode-guide .subtitle > *,
+#season-guide .episode > *{
+        vertical-align: middle;
+}
+#episode-guide .subtitle-text {
+        font-size: 200%;
+}
+#season-guide .episode-name {
+        font-size: 250%;
 }
 
 /* browser pages */

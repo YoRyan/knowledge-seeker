@@ -7,13 +7,13 @@
 {% block content %}
 <section id="season-guide">
         {% for episode in episodes %}
-        <div>
-                <a href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">
-                <span class="episode-list-preview"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=episode.timecode) }}" alt="" width="150" height="100"></span>
-                <span class="episode-list-length">{{ episode.duration }}</span>
-                <span class="episode-list-name">{{ episode.name }}</span>
-                </a>
-        </div>
+        <a class="episode" href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">
+                <span class="image-timecode-wrap">
+                        <img class="image" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=episode.timecode) }}" alt="">
+                        <span class="timecode episode-length">{{ episode.duration }}</span>
+                </span>
+                <span class="episode-name">{{ episode.name }}</span>
+        </a>
         {% endfor %}
 </section>
 {% endblock %}
