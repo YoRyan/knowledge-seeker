@@ -12,9 +12,9 @@
                 {% if subtitle.start <= timecode and subtitle.end >= timecode %}
                 <span class="subtitle now">{{ subtitle.content|safe }}</span>
                 {% elif subtitle.start <= timecode %}
-                <span class="subtitle before"><a href="{{ caller(subtitle.start) }}">&laquo; {{ subtitle.content|safe }}</a></span>
+                <span class="subtitle before"><a href="{{ caller(subtitle.nav_timecode) }}">&laquo; {{ subtitle.content|safe }}</a></span>
                 {% else %}
-                <span class="subtitle start"><a href="{{ caller(subtitle.end) }}">{{ subtitle.content|safe }} &raquo;</a></span>
+                <span class="subtitle start"><a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }} &raquo;</a></span>
                 {% endif %}
                 {% endfor %}
         </div>

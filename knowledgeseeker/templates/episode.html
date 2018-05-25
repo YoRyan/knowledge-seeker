@@ -9,7 +9,7 @@
 {% block content %}
 <section>
         {% for subtitle in subtitles %}
-        <a class="subtitle" style="margin-top: {{ subtitle.time_since_last }}rem;" href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=subtitle.start) }}">
+        <a class="subtitle" style="margin-top: {{ subtitle.time_since_last }}rem;" href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=subtitle.nav_timecode) }}">
                 <span class="image-timecode-wrap">
                         <img class="image" alt="" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=subtitle.preview) }}">
                         <span class="timecode subtitle-range">{{ subtitle.range }}</span>
