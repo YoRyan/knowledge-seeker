@@ -33,7 +33,9 @@ def browse_episode(season, episode):
             timecodes = strptimecode(s.start)
         else:
             timecodes = '%s - %s' % (strptimecode(s.start), strptimecode(s.end))
-        rendered_subtitles.append({ 'timecode': Timecode.from_timedelta((s.start + s.end)/2),
+        rendered_subtitles.append({ 'preview': Timecode.from_timedelta((s.start + s.end)/2),
+                                    'start': Timecode.from_timedelta(s.start),
+                                    'end': Timecode.from_timedelta(s.end),
                                     'range': timecodes,
                                     'text': s.content,
                                     'time_since_last': time_since_last })
@@ -53,8 +55,8 @@ def browse_moment(season, episode, timecode):
     kwargs['timecode'] = timecode
     # surrounding subtitles
     subtitles = surrounding_subtitles(episode, timecode)
-    render = lambda subtitle: { 'start': subtitle.start,
-                                'end': subtitle.end,
+    render = lambda subtitle: { 'start': Timecode.from_timedelta(subtitle.start),
+                                'end': Timecode.from_timedelta(subtitle.end),
                                 'timecode': Timecode.from_timedelta((subtitle.start + subtitle.end)/2),
                                 'content': subtitle.content }
     kwargs['subtitles'] = [render(subtitle) for subtitle in subtitles]
@@ -78,9 +80,8 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     # surrounding subtitles
     first_subtitles = surrounding_subtitles(episode, first_timecode)
     second_subtitles = surrounding_subtitles(episode, second_timecode)
-    render = lambda subtitle: { 'start': subtitle.start,
-                                'end': subtitle.end,
-                                'timecode': Timecode.from_timedelta((subtitle.start + subtitle.end)/2),
+    render = lambda subtitle: { 'start': Timecode.from_timedelta(subtitle.start),
+                                'end': Timecode.from_timedelta(subtitle.end),
                                 'content': subtitle.content }
     kwargs['first_subtitles'] = [render(subtitle) for subtitle in first_subtitles]
     kwargs['second_subtitles'] = [render(subtitle) for subtitle in second_subtitles]
