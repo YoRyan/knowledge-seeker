@@ -2,11 +2,10 @@
 
 {% block title %}{{ season.name }}{% endblock %}
 
+{% block header %}{{ season.name }}{% endblock %}
+
 {% block content %}
-<nav>
-        <h1>{{ season.name }}</h1>
-</nav>
-<section>
+<section id="season-guide">
         {% for episode in episodes %}
         <div>
                 <a href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">

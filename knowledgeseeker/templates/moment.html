@@ -9,11 +9,9 @@
 {% endif %}
 {% endblock %}
 
+{% block header %}<a href="../..">{{ season.name }}</a> | <a href="..">{{ episode.name }}</a>{% endblock %}
+
 {% block content %}
-<nav>
-        <h1><a href="../..">{{ season.name }}</a> |
-            <a href="..">{{ episode.name }}</a></h1>
-</nav>
 <section id="browser">
         <div>
                 {% call(nav_time) browser.show_time(season, episode, timecode, subtitles, step_times) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}

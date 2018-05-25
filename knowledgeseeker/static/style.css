@@ -22,18 +22,18 @@ a:hover, a:focus {
 
 /* common header */
 nav {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        height: 4rem;
+        padding: 1rem;
+}
+nav > h1 {
+        float: left;
+        font-size: 2rem;
+}
+nav > #header-rightside {
+        text-align: right;
+        font-size: 2rem;
 }
 
 /* browser pages */
-#browser {
-        margin-top: 4rem;
-}
-
 .browser-preview {
         float: left;
         width: 50%;
