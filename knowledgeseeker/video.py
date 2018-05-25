@@ -39,7 +39,7 @@ def make_tiny_snapshot(video_path, time, vres=100):
     stream = (ffmpeg
               .input(video_path,
                      ss=time)
-              .filter_('scale', -1, vres, 'lanczos')
+              .filter_('scale', -1, vres)
               .output('pipe:1',
                       format='singlejpeg',
                       vframes=1,
@@ -53,13 +53,13 @@ def make_gif(video_path, start_time, end_time, vres=360):
     pstream = ffmpeg.input(video_path,
                            ss=start_time,
                            t=duration.total_seconds())
-    pstream = ffmpeg.filter_(pstream, 'scale', -1, vres, 'lanczos')
+    pstream = ffmpeg.filter_(pstream, 'scale', -1, vres)
     pstream = ffmpeg.filter_(pstream, 'palettegen', stats_mode='full')
 
     # Create the actual jif
     gstream = ffmpeg.input(video_path,
                            ss=start_time)
-    gstream = ffmpeg.filter_(gstream, 'scale', -1, vres, 'lanczos')
+    gstream = ffmpeg.filter_(gstream, 'scale', -1, vres)
     gstream = ffmpeg_paletteuse_filter(gstream, pstream,
                                        dither='bayer',
                                        bayer_scale=5,
@@ -78,7 +78,7 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
     pstream = ffmpeg.input(video_path,
                            ss=start_time,
                            t=duration.total_seconds())
-    pstream = ffmpeg.filter_(pstream, 'scale', -1, vres, 'lanczos')
+    pstream = ffmpeg.filter_(pstream, 'scale', -1, vres)
     pstream = ffmpeg_subtitles_filter(pstream, subtitle_path, start_time,
                                       fonts_path=fonts_path, font=font)
     pstream = ffmpeg.filter_(pstream, 'palettegen', stats_mode='full')
@@ -86,7 +86,7 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
     # Create the actual jif
     gstream = ffmpeg.input(video_path,
                            ss=start_time)
-    gstream = ffmpeg.filter_(gstream, 'scale', -1, vres, 'lanczos')
+    gstream = ffmpeg.filter_(gstream, 'scale', -1, vres)
     gstream = ffmpeg_subtitles_filter(gstream, subtitle_path, start_time,
                                       fonts_path=fonts_path, font=font)
     gstream = ffmpeg_paletteuse_filter(gstream, pstream,
@@ -103,7 +103,7 @@ def make_webm(video_path, start_time, end_time, vres=360):
     duration = end_time - start_time
     stream = ffmpeg.input(video_path,
                           ss=start_time)
-    stream = ffmpeg.filter_(stream, 'scale', -1, vres, 'lanczos')
+    stream = ffmpeg.filter_(stream, 'scale', -1, vres)
     stream = ffmpeg.output(stream, 'pipe:1',
                            **{ 'format': 'webm',
                                't': duration.total_seconds(),
@@ -120,7 +120,7 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
     duration = end_time - start_time
     stream = ffmpeg.input(video_path,
                           ss=start_time)
-    stream = ffmpeg.filter_(stream, 'scale', -1, vres, 'lanczos')
+    stream = ffmpeg.filter_(stream, 'scale', -1, vres)
     stream = ffmpeg_subtitles_filter(stream, subtitle_path, start_time,
                                      fonts_path=fonts_path, font=font)
     stream = ffmpeg.output(stream, 'pipe:1',
