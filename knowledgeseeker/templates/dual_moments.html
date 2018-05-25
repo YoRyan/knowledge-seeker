@@ -13,7 +13,7 @@
 {% endif %}
 {% endblock %}
 
-{% block header %}<a href="../..">{{ season.name }}</a> | <a href="..">{{ episode.name }}</a>{% endblock %}
+{% block header %}<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> | <a href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">{{ episode.name }}</a>{% endblock %}
 
 {% block content %}
 <section id="browser">
