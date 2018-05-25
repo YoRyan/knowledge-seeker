@@ -28,12 +28,12 @@ a:hover, a:focus {
 .image-timecode-wrap {
         position: relative;
         display: inline-block;
-        width: 8rem;
+        height: 6rem;
 }
 .image-timecode-wrap > img {
         display: block;
-        width: 100%;
-        height: auto;
+        width: auto;
+        height: 100%;
 }
 .image-timecode-wrap > .timecode {
         position: absolute;
