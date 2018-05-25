@@ -35,6 +35,17 @@ def make_snapshot_with_subtitles(video_path, subtitle_path, time,
                            q=1)
     return ffmpeg_run_stdout(stream)
 
+def make_tiny_snapshot(video_path, time, vres=100):
+    stream = (ffmpeg
+              .input(video_path,
+                     ss=time)
+              .filter_('scale', -1, vres, 'lanczos')
+              .output('pipe:1',
+                      format='singlejpeg',
+                      vframes=1,
+                      q=5))
+    return ffmpeg_run_stdout(stream)
+
 def make_gif(video_path, start_time, end_time, vres=360):
     duration = end_time - start_time
 

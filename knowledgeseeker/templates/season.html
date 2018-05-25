@@ -12,7 +12,7 @@ filename='season.css') }}">{% endblock %}
         {% for episode in episodes %}
         <a class="episode" href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">
                 <span class="image-timecode-wrap">
-                        <img class="image" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=episode.timecode) }}" alt="">
+                        <img class="image" src="{{ url_for('clipper.snapshot_tiny', season=season.slug, episode=episode.slug, timecode=episode.timecode) }}" alt="">
                         <span class="timecode episode-length">{{ episode.duration }}</span>
                 </span>
                 <span class="episode-name">{{ episode.name }}</span>
