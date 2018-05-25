@@ -5,22 +5,22 @@
         --split-color: #a400ff;
 }
 
-.preview-image {
+.browser-preview {
         float: left;
         width: 50%;
         padding: 1rem;
 }
-.preview-image > img {
+.browser-preview > img {
         display: block;
         width: 100%;
         height: auto;
 }
-.preview-links,
-.subtitle-list {
-        float: right;
-        clear: right;
-        width: 50%;
+.browser-controls {
         padding: 1rem;
+}
+
+.subtitle-list {
+        margin-top: 2rem;
 }
 .subtitle {
         display: block;
