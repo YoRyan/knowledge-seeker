@@ -16,7 +16,7 @@
 {% block content %}
 <section id="browser">
         <div>
-                {% call(nav_time) browser.show_time(season, episode, timecode, subtitles, step_times) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
+                {% call(nav_time, target) browser.show_time(season, episode, timecode, subtitles, step_times) %}{{ url_for(target, season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
         </div>
 </section>
 <section id="dual-controls">
