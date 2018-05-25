@@ -13,15 +13,18 @@ body {
         color: black;
         background-color: white;
 }
+
 body > section {
         padding: 1rem;
 }
+
 a:visited, a:link {
         color: #2a2a2a;
 }
 a:hover, a:focus {
         color: black;
 }
+
 .image-timecode-wrap {
         position: relative;
         display: inline-block;
@@ -55,41 +58,7 @@ nav > #header-rightside {
         font-size: 2rem;
 }
 
-/* episode page */
-#episode-guide .subtitle,
-#season-guide .episode {
-        display: block;
-        text-decoration: none;
-}
-#season-guide .episode {
-        margin: 0.5rem 0;
-}
-#episode-guide .subtitle > *,
-#season-guide .episode > *{
-        vertical-align: middle;
-}
-#episode-guide .subtitle-text {
-        font-size: 200%;
-}
-#season-guide .episode-name {
-        font-size: 250%;
-}
-
-/* browser pages */
-.browser-preview {
-        float: left;
-        width: 50%;
-        padding: 1rem;
-}
-.browser-preview > img {
-        display: block;
-        width: 100%;
-        height: auto;
-}
-.browser-controls {
-        padding: 1rem;
-}
-
+/* fancy buttons */
 .media-link {
         text-transform: uppercase;
         text-decoration: none;
@@ -130,88 +99,5 @@ nav > #header-rightside {
 .media-link.webm:hover {
         background-color: white;
         color: var(--webm-color);
-}
-
-.subtitle-list {
-        margin-top: 2rem;
-}
-.subtitle {
-        display: block;
-        margin: 1rem 0;
-}
-.subtitle.now {
-        font-size: 150%;
-}
-
-.nav-browser {
-        clear: both;
-        overflow: auto;
-        text-align: center;
-        white-space: nowrap;
-}
-.nav-moment {
-        display: inline-block;
-        width: 10%;
-        margin: 0.2rem;
-}
-.nav-moment > img {
-        display: block;
-        width: 100%;
-        height: auto;
-        border: 0.2rem solid;
-        border-color: white;
-}
-.nav-moment.now > img {
-        border-color: #ff9600;
-}
-
-#dual-controls {
-        position: relative;
-        top: 2rem;
-        text-align: center;
-}
-#dual-split {
-        border-color: var(--split-color);
-        background-color: var(--split-color);
-        color: white;
-}
-#dual-split:hover {
-        color: var(--split-color);
-        background-color: white;
-}
-
-
-/* narrow browser layout */
-#first-browser {
-        float: left;
-        width: 50%;
-}
-#second-browser {
-        float: right;
-        width: 50%;
-}
-#first-browser .browser-preview,
-#second-browser .browser-preview {
-        width: 100%;
-        float: none;
-}
-#first-browser .browser-controls,
-#second-browser .browser-controls {
-        position: relative;
-        padding-top: 8rem;
-}
-#first-browser .nav-browser,
-#second-browser .nav-browser {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-}
-#first-browser .nav-moment,
-#second-browser .nav-moment {
-        width: 8rem;
-}
-#dual-controls {
-        clear: both;
 }
 

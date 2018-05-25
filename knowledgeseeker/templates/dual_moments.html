@@ -1,6 +1,8 @@
 {% import 'browser.html' as browser %}
 {% extends 'base.html' %}
 
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='moment.css') }}">{% endblock %}
+
 {% block title %}
 {% if first_line is none %}
 {{ episode.name }} - {{ season.name }}

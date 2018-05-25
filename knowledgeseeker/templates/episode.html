@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='episode.css') }}">{% endblock %}
+
 {% block title %}{{ episode.name }} - {{ season.name }}{% endblock %}
 
 {% block header %}<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> | {{ episode.name }}{% endblock %}
 
 {% block content %}
-<section id="episode-guide">
+<section>
         {% for subtitle in subtitles %}
         <a class="subtitle" style="margin-top: {{ subtitle.time_since_last }}rem;" href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=subtitle.timecode) }}">
                 <span class="image-timecode-wrap">

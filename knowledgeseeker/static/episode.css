@@ -1,0 +1,11 @@
+.subtitle {
+        display: block;
+        text-decoration: none;
+}
+.subtitle > * {
+        vertical-align: middle;
+}
+.subtitle-text {
+        font-size: 200%;
+}
+

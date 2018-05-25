@@ -1,0 +1,13 @@
+/* episode page */
+.episode {
+        display: block;
+        text-decoration: none;
+        margin: 0.5rem 0;
+}
+.episode > *{
+        vertical-align: middle;
+}
+.episode-name {
+        font-size: 250%;
+}
+

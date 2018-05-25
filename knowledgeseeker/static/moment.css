@@ -1,0 +1,104 @@
+:root {
+        --jpeg-color: #0072ff;
+        --gif-color: #cf0000;
+        --webm-color: #009a12;
+        --split-color: #a400ff;
+}
+
+.browser-preview {
+        float: left;
+        width: 50%;
+        padding: 1rem;
+}
+.browser-preview > img {
+        display: block;
+        width: 100%;
+        height: auto;
+}
+.browser-controls {
+        padding: 1rem;
+}
+
+.subtitle-list {
+        margin-top: 2rem;
+}
+.subtitle {
+        display: block;
+        margin: 1rem 0;
+}
+.subtitle.now {
+        font-size: 150%;
+}
+
+.nav-browser {
+        clear: both;
+        overflow: auto;
+        text-align: center;
+        white-space: nowrap;
+}
+.nav-moment {
+        display: inline-block;
+        width: 10%;
+        margin: 0.2rem;
+}
+.nav-moment > img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 0.2rem solid;
+        border-color: white;
+}
+.nav-moment.now > img {
+        border-color: #ff9600;
+}
+
+#dual-controls {
+        position: relative;
+        top: 2rem;
+        text-align: center;
+}
+#dual-split {
+        border-color: var(--split-color);
+        background-color: var(--split-color);
+        color: white;
+}
+#dual-split:hover {
+        color: var(--split-color);
+        background-color: white;
+}
+
+
+/* narrow browser layout */
+#first-browser {
+        float: left;
+        width: 50%;
+}
+#second-browser {
+        float: right;
+        width: 50%;
+}
+#first-browser .browser-preview,
+#second-browser .browser-preview {
+        width: 100%;
+        float: none;
+}
+#first-browser .browser-controls,
+#second-browser .browser-controls {
+        position: relative;
+        padding-top: 8rem;
+}
+#first-browser .nav-browser,
+#second-browser .nav-browser {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+}
+#first-browser .nav-moment,
+#second-browser .nav-moment {
+        width: 8rem;
+}
+#dual-controls {
+        clear: both;
+}
+
