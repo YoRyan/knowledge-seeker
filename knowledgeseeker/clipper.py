@@ -15,10 +15,6 @@ from .video import (make_snapshot, make_snapshot_with_subtitles,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
 
-MAX_GIF_SECS = 10
-MAX_WEBM_SECS = 20
-GIF_VRES = 360
-
 bp = flask.Blueprint('clipper', __name__)
 
 @bp.route('/<season>/<episode>/<timecode>/pic')
@@ -50,9 +46,10 @@ def snapshot_with_subtitles(season, episode, timecode):
 @parse_timecode('start_timecode')
 @parse_timecode('end_timecode')
 @check_timecode_range('start_timecode', 'end_timecode',
-                      timedelta(seconds=MAX_GIF_SECS))
+                      lambda: flask.current_app.config['MAX_GIF_LENGTH'])
 def gif(season, episode, start_timecode, end_timecode):
-    data = make_gif(episode.video_path, start_timecode, end_timecode)
+    data = make_gif(episode.video_path, start_timecode, end_timecode,
+                    vres=flask.current_app.config['GIF_VRES'])
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
     set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
@@ -65,11 +62,12 @@ def gif(season, episode, start_timecode, end_timecode):
 @parse_timecode('start_timecode')
 @parse_timecode('end_timecode')
 @check_timecode_range('start_timecode', 'end_timecode',
-                      timedelta(seconds=MAX_GIF_SECS))
+                      lambda: flask.current_app.config['MAX_GIF_LENGTH'])
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     data = call_with_fonts(make_gif_with_subtitles,
                            episode.video_path,
-                           episode.subtitles_path, start_timecode, end_timecode)
+                           episode.subtitles_path, start_timecode, end_timecode,
+                           vres=flask.current_app.config['GIF_VRES'])
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
     set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
@@ -81,9 +79,10 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
 @parse_timecode('start_timecode')
 @parse_timecode('end_timecode')
 @check_timecode_range('start_timecode', 'end_timecode',
-                      timedelta(seconds=MAX_WEBM_SECS))
+                      lambda: flask.current_app.config['MAX_WEBM_LENGTH'])
 def webm(season, episode, start_timecode, end_timecode):
-    data = make_webm(episode.video_path, start_timecode, end_timecode)
+    data = make_webm(episode.video_path, start_timecode, end_timecode,
+                     vres=flask.current_app.config['WEBM_VRES'])
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
     set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
@@ -96,11 +95,12 @@ def webm(season, episode, start_timecode, end_timecode):
 @parse_timecode('start_timecode')
 @parse_timecode('end_timecode')
 @check_timecode_range('start_timecode', 'end_timecode',
-                      timedelta(seconds=MAX_WEBM_SECS))
+                      lambda: flask.current_app.config['MAX_WEBM_LENGTH'])
 def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     data = call_with_fonts(make_webm_with_subtitles,
                            episode.video_path,
-                           episode.subtitles_path, start_timecode, end_timecode)
+                           episode.subtitles_path, start_timecode, end_timecode,
+                           vres=flask.current_app.config['WEBM_VRES'])
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
     set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])

@@ -92,12 +92,15 @@ def parse_timecode(var):
         return decorator
     return wrapper
 
-def check_timecode_range(start_var, end_var, max_length):
+def check_timecode_range(start_var, end_var, get_max_length):
     def wrapper(f):
         @wraps(f)
         def decorator(**kwargs):
             start_timecode = kwargs[start_var]
             end_timecode = kwargs[end_var]
+            # NOTE: bad hack to avoid querying the config outside of the
+            # application context
+            max_length = get_max_length()
             if start_timecode >= end_timecode:
                 return http_error(400, 'bad time range')
             elif end_timecode - start_timecode > max_length:
