@@ -7,10 +7,11 @@ from functools import wraps
 class Timecode(timedelta):
     def __str__(self):
         av = abs(self)
-        milliseconds = round(av.microseconds/1000)
-        seconds = av.seconds % 60
-        minutes = av.seconds // 60 % 60
-        hours = av.seconds // 60 // 60
+        total_ms = round(av.microseconds/1000 + av.seconds*1000)
+        milliseconds = total_ms % 1000
+        seconds = total_ms // 1000 % 60
+        minutes = total_ms // 1000 // 60 % 60
+        hours = total_ms // 1000 // 60 // 60
         if hours > 0:
             string = '%02d:%02d:%02d.%03d' % (hours, minutes, seconds, milliseconds)
         else:
