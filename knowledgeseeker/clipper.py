@@ -2,9 +2,11 @@ import flask
 import json
 import re
 import subprocess
-from datetime import timedelta
+from datetime import datetime, timedelta
 from os import environ
 from pathlib import Path
+from time import mktime
+from wsgiref.handlers import format_date_time
 
 from . import cache
 from .utils import (Timecode, match_season_episode, episode_has_subtitles,
@@ -26,6 +28,7 @@ def snapshot(season, episode, timecode):
     data = make_snapshot(episode.video_path, timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/jpeg')
+    set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
     return response
 
 @bp.route('/<season>/<episode>/<timecode>/pic/sub')
@@ -38,6 +41,7 @@ def snapshot_with_subtitles(season, episode, timecode):
                            episode.subtitles_path, timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/jpeg')
+    set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
@@ -51,6 +55,7 @@ def gif(season, episode, start_timecode, end_timecode):
     data = make_gif(episode.video_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
+    set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
@@ -67,6 +72,7 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
                            episode.subtitles_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/gif')
+    set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm')
@@ -80,6 +86,7 @@ def webm(season, episode, start_timecode, end_timecode):
     data = make_webm(episode.video_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
+    set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm/sub')
@@ -96,6 +103,7 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
                            episode.subtitles_path, start_timecode, end_timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'video/webm')
+    set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
     return response
 
 def call_with_fonts(callee, *args, **kwargs):
@@ -107,4 +115,8 @@ def call_with_fonts(callee, *args, **kwargs):
         else:
             kwargs['font'] = app_config['SUBTITLES_FONT']
     return callee(*args, **kwargs)
+
+def set_expires_header(response, td):
+    date = datetime.now() + td
+    response.headers.set('Expires', format_date_time(mktime(date.timetuple())))
 
