@@ -20,6 +20,12 @@ class Timecode(timedelta):
             return string
         else:
             return '-%s' % string
+    def __add__(self, other):
+        return Timecode.from_timedelta(timedelta.__add__(self, other))
+    def __sub__(self, other):
+        return Timecode.from_timedelta(timedelta.__sub__(self, other))
+    def __mul__(self, other):
+        return Timecode.from_timedelta(timedelta.__mul__(self, other))
     def __truediv__(self, other):
         return Timecode.from_timedelta(timedelta.__truediv__(self, other))
     def strftimecode(s):

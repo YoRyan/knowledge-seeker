@@ -1,17 +1,30 @@
 {% extends 'base.html' %}
 
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='episode.css') }}">{% endblock %}
+{% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
 
-{% block title %}{{ episode.name }} - {{ season.name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='episode.css') }}">
+{% endblock %}
 
-{% block header %}<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> | {{ episode.name }}{% endblock %}
+{% block title %}
+{{ episode.name }} - {{ season.name }}
+{% endblock %}
+
+{% block header %}
+<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> |
+{{ episode.name }}
+{% endblock %}
 
 {% block content %}
 <section>
         {% for subtitle in subtitles %}
-        <a class="subtitle" style="margin-top: {{ subtitle.time_since_last }}rem;" href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=subtitle.nav_timecode) }}">
+        <a class="subtitle"
+           style="margin-top: {{ subtitle.time_since_last }}rem;"
+           href="{{ url_for('explorer.browse_moment', timecode=subtitle.nav, **episode_kwargs) }}">
                 <span class="image-timecode-wrap">
-                        <img class="image" alt="" src="{{ url_for('clipper.snapshot_tiny', season=season.slug, episode=episode.slug, timecode=subtitle.preview) }}">
+                        <img class="image"
+                             src="{{ url_for('clipper.snapshot_tiny', timecode=subtitle.preview, **episode_kwargs) }}"
+                             alt="">
                         <span class="timecode subtitle-range">{{ subtitle.range }}</span>
                 </span>
                 <span class="subtitle-text">{{ subtitle.text|safe }}</span>

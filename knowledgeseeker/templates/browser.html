@@ -25,17 +25,17 @@
         <span class="subtitle now">{{ subtitle.content|safe }}</span>
 {% elif subtitle.start <= current_time %}
         <span class="subtitle before">
-                <a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a>
+                <a href="{{ caller(subtitle.nav) }}">{{ subtitle.content|safe }}</a>
         </span>
         <img style="display: none;"
-             src="{{ url_for('clipper.snapshot', timecode=subtitle.nav_timecode, **episode_kwargs) }}"
+             src="{{ url_for('clipper.snapshot', timecode=subtitle.nav, **episode_kwargs) }}"
              alt="">
 {% else %}
         <span class="subtitle start">
-                <a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a>
+                <a href="{{ caller(subtitle.nav) }}">{{ subtitle.content|safe }}</a>
         </span>
         <img style="display: none;"
-             src="{{ url_for('clipper.snapshot', timecode=subtitle.nav_timecode, **episode_kwargs) }}"
+             src="{{ url_for('clipper.snapshot', timecode=subtitle.nav, **episode_kwargs) }}"
              alt="">
 {% endif %}
 {% endfor %}

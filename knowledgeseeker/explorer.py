@@ -33,8 +33,8 @@ def browse_episode(season, episode):
             timecodes = strptimecode(s.start)
         else:
             timecodes = '%s - %s' % (strptimecode(s.start), strptimecode(s.end))
-        rendered_subtitles.append({ 'preview': Timecode.from_timedelta((s.start + s.end)/2),
-                                    'nav_timecode': nav_timecode(s),
+        rendered_subtitles.append({ 'preview': s.preview,
+                                    'nav': s.nav,
                                     'range': timecodes,
                                     'text': s.content,
                                     'time_since_last': time_since_last })
@@ -54,19 +54,12 @@ def browse_moment(season, episode, timecode):
     kwargs['timecode'] = timecode
     # timecodes for split command
     if timecode == episode.duration:
-        split_timecodes = [Timecode.from_timedelta(timecode - timedelta(seconds=0.1)),
-                           timecode]
+        split_timecodes = [timecode - timedelta(seconds=0.1), timecode]
     else:
-        split_timecodes = [timecode,
-                           Timecode.from_timedelta(timecode + timedelta(seconds=0.1))]
+        split_timecodes = [timecode, timecode + timedelta(seconds=0.1)]
     kwargs['split_timecodes'] = split_timecodes
     # surrounding subtitles
-    subtitles = surrounding_subtitles(episode, timecode)
-    render = lambda subtitle: { 'start': subtitle.start,
-                                'end': subtitle.end,
-                                'nav_timecode': nav_timecode(subtitle),
-                                'content': subtitle.content }
-    kwargs['subtitles'] = [render(subtitle) for subtitle in subtitles]
+    kwargs['subtitles'] = surrounding_subtitles(episode, timecode)
     # page title
     kwargs['current_line'] = current_line(episode, timecode)
     # navigation previews
@@ -88,13 +81,7 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     kwargs['first_timecode'] = first_timecode
     kwargs['second_timecode'] = second_timecode
     # surrounding subtitles
-    first_subtitles = surrounding_subtitles(episode, first_timecode)
-    second_subtitles = surrounding_subtitles(episode, second_timecode)
-    render = lambda subtitle: { 'start': subtitle.start,
-                                'end': subtitle.end,
-                                'nav_timecode': nav_timecode(subtitle),
-                                'content': subtitle.content }
-    kwargs['first_subtitles'] = [render(subtitle) for subtitle in first_subtitles]
+    kwargs['first_subtitles'] = surrounding_subtitles(episode, first_timecode)
     # page title
     kwargs['first_line'] = current_line(episode, first_timecode)
     kwargs['second_line'] = current_line(episode, second_timecode)
@@ -129,16 +116,10 @@ def surrounding_subtitles(episode, timecode):
         else:
             return min(abs(subtitle.start - timecode), abs(subtitle.end - timecode))
     closest = sorted(episode.subtitles, key=distance)[0]
-    surrounding = [closest]
-    # Locate the preceding
-    surrounding += [subtitle for subtitle in episode.subtitles
-                    if (subtitle.index >= closest.index - N_SURROUNDING
-                        and subtitle.index < closest.index)]
-    # Locate the following
-    surrounding += [subtitle for subtitle in episode.subtitles
-                    if (subtitle.index <= closest.index + N_SURROUNDING
-                        and subtitle.index > closest.index)]
-    surrounding.sort(key=lambda subtitle: subtitle.index)
+    idx = episode.subtitles.index(closest)
+    surrounding = (episode.subtitles[idx - N_SURROUNDING:idx] +
+                   [closest] +
+                   episode.subtitles[idx + 1:idx + N_SURROUNDING + 1])
     return surrounding
 
 def current_line(episode, timecode):
@@ -154,21 +135,17 @@ def step_times(episode, timecode):
                   timedelta(seconds=0.2),
                   timedelta(seconds=0.5),
                   timedelta(seconds=1)]
-    step_times = ([Timecode.from_timedelta(timecode - td) for td in reversed(TIME_STEPS)] +
+    step_times = ([timecode - td for td in reversed(TIME_STEPS)] +
                   [timecode] +
-                  [Timecode.from_timedelta(timecode + td) for td in TIME_STEPS])
+                  [timecode + td for td in TIME_STEPS])
     return filter(lambda t: t >= Timecode(0) and t <= episode.duration, step_times)
 
 def intermediate_times(start_timecode, end_timecode):
     secs = (end_timecode - start_timecode).total_seconds()
     if secs % 1 == 0:
-        return [Timecode.from_timedelta(start_timecode + timedelta(seconds=int(s)))
+        return [start_timecode + timedelta(seconds=int(s))
                 for s in range(1, int(secs))]
     else:
-        return [Timecode.from_timedelta(start_timecode + timedelta(seconds=int(s)))
+        return [start_timecode + timedelta(seconds=int(s))
                 for s in range(1, int(secs) + 1)]
-
-# 10% buffer to deal with slightly overlapping subtitles
-nav_timecode = lambda subtitle: Timecode.from_timedelta(subtitle.start +
-                                                        (subtitle.end - subtitle.start)*0.1)
 

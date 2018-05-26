@@ -21,12 +21,24 @@ class Episode(object):
         self.name = name
         self.video_path = video_path
         self.subtitles_path = subtitles_path
-        self.subtitles = subtitles
+        self.subtitles = [Subtitle(Timecode.from_timedelta(subtitle.start),
+                                   Timecode.from_timedelta(subtitle.end),
+                                   subtitle.content)
+                          for subtitle in subtitles]
 
         try:
             self.duration = video_duration(video_path)
         except FfprobeRuntimeError:
             raise LoadError('failed to read video file: %s' % video_path)
+
+class Subtitle(object):
+    def __init__(self, start, end, content):
+        self.start = start
+        self.end = end
+        self.content = content
+        self.preview = (start + end)/2
+        # 10% buffer to deal with slightly overlapping subtitles
+        self.nav = start + (end - start)*0.1
 
 def load_library_file(library_path):
     with open(str(library_path), 'rt') as f:

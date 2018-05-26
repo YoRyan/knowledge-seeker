@@ -22,10 +22,10 @@
 
 {% block content %}
 <section id="browser">
-{% call(nav_time)
-   browser.show_time(season, episode, timecode, subtitles) %}{{ url_for('explorer.browse_moment', timecode=nav_time, **episode_kwargs) }}{% endcall %}
-{% call(nav_time)
-   browser.show_nav_times(season, episode, timecode, step_times) %}{{ url_for('explorer.browse_moment', timecode=nav_time, **episode_kwargs) }}{% endcall %}
+{% call(nav)
+   browser.show_time(season, episode, timecode, subtitles) %}{{ url_for('explorer.browse_moment', timecode=nav, **episode_kwargs) }}{% endcall %}
+{% call(nav)
+   browser.show_nav_times(season, episode, timecode, step_times) %}{{ url_for('explorer.browse_moment', timecode=nav, **episode_kwargs) }}{% endcall %}
 </section>
 
 <section id="dual-controls">
