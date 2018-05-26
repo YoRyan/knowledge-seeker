@@ -45,7 +45,7 @@ def match_season(f):
         seasons = [season for season in flask.current_app.library_data
                    if season.slug == season_slug]
         if len(seasons) == 0:
-            abort(404, 'season \'%s\' not found' % season_slug)
+            flask.abort(404, 'season \'%s\' not found' % season_slug)
         season = seasons[0]
         kwargs.pop('season')
         return f(season=season, **kwargs)
@@ -60,7 +60,7 @@ def match_season_episode(f):
         episodes = [episode for episode in season.episodes
                     if episode.slug == episode_slug]
         if len(episodes) == 0:
-            abort(404, 'episode \'%s\' not found' % episode_slug)
+            flask.abort(404, 'episode \'%s\' not found' % episode_slug)
         episode = episodes[0]
         kwargs.pop('episode')
         return f(episode=episode, **kwargs)
@@ -70,7 +70,7 @@ def episode_has_subtitles(f):
     @wraps(f)
     def decorator(episode, **kwargs):
         if episode.subtitles_path is None:
-            abort(404, 'subtitles not available for \'%s\'' % episode.name)
+            flask.abort(404, 'subtitles not available for \'%s\'' % episode.name)
         else:
             return f(episode=episode, **kwargs)
     return decorator
@@ -82,11 +82,11 @@ def parse_timecode(var):
             timecode_in = kwargs[var]
             # Check timecode format
             if not re.match(r'^(\d?\d:)?[0-5]?\d:[0-5]?\d(\.\d\d?\d?)?$', timecode_in):
-                abort(400, 'invalid timecode format: \'%s\'' % timecode_in)
+                flask.abort(400, 'invalid timecode format: \'%s\'' % timecode_in)
             # Check it's within bounds of episode
             timecode = Timecode.strftimecode(timecode_in)
             if timecode > episode.duration:
-                abort(416, 'timecode out of range: \'%s\'' % timecode)
+                flask.abort(416, 'timecode out of range: \'%s\'' % timecode)
             # Run decorated function
             kwargs[var] = timecode
             return f(episode=episode, **kwargs)
@@ -103,9 +103,9 @@ def check_timecode_range(start_var, end_var, get_max_length):
             # application context
             max_length = get_max_length()
             if start_timecode >= end_timecode:
-                abort(400, 'bad time range')
+                flask.abort(400, 'bad time range')
             elif end_timecode - start_timecode > max_length:
-                abort(416, 'requested time range exceeds maximum limit')
+                flask.abort(416, 'requested time range exceeds maximum limit')
             else:
                 return f(**kwargs)
         return decorator
