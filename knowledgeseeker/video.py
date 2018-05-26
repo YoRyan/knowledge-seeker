@@ -146,13 +146,14 @@ def video_duration(video_path):
     else:
         raise FfprobeRuntimeError
 
-def ffmpeg_subtitles_filter(stream, subtitle_path, start_time, fonts_path=None, font=None):
+def ffmpeg_subtitles_filter(stream, subtitle_path, start_time,
+                            fonts_path=None, font=None, font_size=24):
     # Move pointer to start time
     stream = ffmpeg.setpts(stream, 'PTS+%f/TB' % start_time.total_seconds())
     # Add subtitles filter
-    sub_kwargs = {}
+    sub_kwargs = { 'force_style': 'Fontsize=%d' % font_size }
     if font is not None:
-        sub_kwargs['force_style'] = 'FontName=%s' % font
+        sub_kwargs['force_style'] += ',FontName=%s' % font
         if fonts_path is not None:
             sub_kwargs['fontsdir'] = fonts_path
     stream = ffmpeg.filter_(stream, 'subtitles', str(subtitle_path), **sub_kwargs)
