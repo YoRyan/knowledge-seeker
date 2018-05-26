@@ -79,6 +79,9 @@ def browse_moment(season, episode, timecode):
 @parse_timecode('first_timecode')
 @parse_timecode('second_timecode')
 def browse_dual_moments(season, episode, first_timecode, second_timecode):
+    if second_timecode <= first_timecode:
+        flask.abort(400, 'bad time range')
+
     kwargs = {}
     kwargs['season'] = season
     kwargs['episode'] = episode
