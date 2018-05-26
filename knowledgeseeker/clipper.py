@@ -44,7 +44,12 @@ def snapshot_with_subtitles(season, episode, timecode):
 @match_season_episode
 @parse_timecode('timecode')
 def snapshot_tiny(season, episode, timecode):
-    data = make_tiny_snapshot(episode.video_path, timecode)
+    # If there's a cached preview image, serve that
+    cached = flask.current_app.preview_cache.serve(season, episode, timecode)
+    if cached is not None:
+        data = cached
+    else:
+        data = make_tiny_snapshot(episode.video_path, timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/jpeg')
     set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])
