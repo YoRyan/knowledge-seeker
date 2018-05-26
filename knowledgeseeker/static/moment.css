@@ -3,6 +3,10 @@
         --gif-color: #cf0000;
         --webm-color: #009a12;
         --split-color: #a400ff;
+        --current-time-color: #ff9600;
+        --intermediate-time-color: white;
+        --start-time-color: #48df00;
+        --end-time-color: #ff0000;
 }
 
 .preview-image {
@@ -25,7 +29,7 @@
         margin: 1rem 0;
 }
 .subtitle.now {
-        margin: 2rem 0;
+        margin: 1rem 0;
         font-size: 150%;
 }
 
@@ -39,16 +43,16 @@
         display: inline-block;
         width: 10%;
         margin: 0.2rem;
+        border: 0.2rem solid white;
+}
+.nav-moment.now {
+        border-color: var(--current-time-color);
 }
 .nav-moment > img {
         display: block;
         width: 100%;
         height: auto;
-        border: 0.2rem solid;
         border-color: white;
-}
-.nav-moment.now > img {
-        border-color: #ff9600;
 }
 
 #dual-controls {
@@ -66,38 +70,28 @@
         background-color: white;
 }
 
-
-/* narrow browser layout */
-#first-browser {
-        float: left;
-        width: 50%;
+/* dual browsing only */
+.nav-intermediates {
+        text-align: center;
+        margin: 3rem 0;
 }
-#second-browser {
-        float: right;
-        width: 50%;
+.nav-moment.animation-start,
+.nav-moment.animation-intermediate,
+.nav-moment.animation-end {
+        width: 18%;
 }
-#first-browser .browser-preview,
-#second-browser .browser-preview {
-        width: 100%;
-        float: none;
+.nav-moment.animation-start,
+#start-nav .nav-moment.now {
+        border: 0.2rem solid var(--start-time-color);
 }
-#first-browser .browser-controls,
-#second-browser .browser-controls {
-        position: relative;
-        padding-top: 8rem;
+.nav-moment.animation-intermediate {
+        border: 0.2rem solid var(--intermediate-time-color);
 }
-#first-browser .nav-browser,
-#second-browser .nav-browser {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
+.nav-moment.animation-end,
+#end-nav .nav-moment.now {
+        border: 0.2rem solid var(--end-time-color);
 }
-#first-browser .nav-moment,
-#second-browser .nav-moment {
-        width: 8rem;
+#dual-duration {
+        text-align: center;
+        font-size: 3rem;
 }
-#dual-controls {
-        clear: both;
-}
-

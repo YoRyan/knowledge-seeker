@@ -17,10 +17,21 @@
 
 {% block content %}
 <section id="browser">
-        {% call(nav_time) browser.show_time(season, episode, first_timecode, first_subtitles) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=nav_time, second_timecode=second_timecode) }}{% endcall %}
-        {% call(nav_time) browser.show_nav_times(season, episode, first_timecode, first_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=nav_time, second_timecode=second_timecode) }}{% endcall %}
-        {% call(nav_time) browser.show_nav_times(season, episode, second_timecode, second_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=nav_time) }}{% endcall %}
+        <div id="start-nav">
+                {% call(nav_time) browser.show_nav_times(season, episode, first_timecode, first_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=nav_time, second_timecode=second_timecode) }}{% endcall %}
+        </div>
+        <div class="nav-intermediates">
+                <span class="nav-moment animation-start"><img src="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=first_timecode) }}" alt=""></span>
+                {% for time in intermediate_times %}
+                <span class="nav-moment animation-intermediate"><img src="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=time) }}" alt=""></span>
+                {% endfor %}
+                <span class="nav-moment animation-end"><img src="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=second_timecode) }}" alt=""></span>
+        </div>
+        <div id="end-nav">
+                {% call(nav_time) browser.show_nav_times(season, episode, second_timecode, second_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=nav_time) }}{% endcall %}
+        </div>
 </section>
+<section id="dual-duration">{{ (second_timecode - first_timecode).total_seconds() }}s</section>
 <section id="dual-controls">
         <a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=first_timecode) }}" class="media-link" id="dual-split">Single View</a>
         <a href="{{ url_for('clipper.gif', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF</a>

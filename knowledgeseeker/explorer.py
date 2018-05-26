@@ -90,6 +90,7 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     # navigation previews
     kwargs['first_step_times'] = step_times(episode, first_timecode)
     kwargs['second_step_times'] = step_times(episode, second_timecode)
+    kwargs['intermediate_times'] = intermediate_times(first_timecode, second_timecode)
     # render template
     return flask.render_template('dual_moments.html', **kwargs)
 
@@ -141,6 +142,15 @@ def step_times(episode, timecode):
                   [timecode] +
                   [Timecode.from_timedelta(timecode + td) for td in TIME_STEPS])
     return filter(lambda t: t >= Timecode(0) and t <= episode.duration, step_times)
+
+def intermediate_times(start_timecode, end_timecode):
+    secs = (end_timecode - start_timecode).total_seconds()
+    if secs % 1 == 0:
+        return [Timecode.from_timedelta(start_timecode + timedelta(seconds=int(s)))
+                for s in range(1, int(secs))]
+    else:
+        return [Timecode.from_timedelta(start_timecode + timedelta(seconds=int(s)))
+                for s in range(1, int(secs) + 1)]
 
 # 10% buffer to deal with slightly overlapping subtitles
 nav_timecode = lambda subtitle: Timecode.from_timedelta(subtitle.start +
