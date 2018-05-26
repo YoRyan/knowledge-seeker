@@ -27,6 +27,3 @@ def init_app(app):
     app.library_data = load_library_file(Path(app.config['LIBRARY']))
     cache.init_app(app)
 
-def http_error(code, message):
-    return flask.Response(message, status=code, mimetype='text/plain')
-

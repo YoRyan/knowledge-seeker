@@ -10,7 +10,7 @@ from wsgiref.handlers import format_date_time
 
 from . import cache
 from .utils import (Timecode, match_season_episode, episode_has_subtitles,
-                    parse_timecode, check_timecode_range, http_error)
+                    parse_timecode, check_timecode_range)
 from .video import (make_snapshot, make_snapshot_with_subtitles, make_tiny_snapshot,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
