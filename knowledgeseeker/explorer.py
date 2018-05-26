@@ -52,6 +52,14 @@ def browse_moment(season, episode, timecode):
     kwargs['season'] = season
     kwargs['episode'] = episode
     kwargs['timecode'] = timecode
+    # timecodes for split command
+    if timecode == episode.duration:
+        split_timecodes = [Timecode.from_timedelta(timecode - timedelta(seconds=0.1)),
+                           timecode]
+    else:
+        split_timecodes = [timecode,
+                           Timecode.from_timedelta(timecode + timedelta(seconds=0.1))]
+    kwargs['split_timecodes'] = split_timecodes
     # surrounding subtitles
     subtitles = surrounding_subtitles(episode, timecode)
     render = lambda subtitle: { 'start': subtitle.start,
@@ -88,9 +96,14 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     kwargs['first_line'] = current_line(episode, first_timecode)
     kwargs['second_line'] = current_line(episode, second_timecode)
     # navigation previews
-    kwargs['first_step_times'] = step_times(episode, first_timecode)
-    kwargs['second_step_times'] = step_times(episode, second_timecode)
+    kwargs['first_step_times'] = filter(lambda t: t < second_timecode,
+                                        step_times(episode, first_timecode))
+    kwargs['second_step_times'] = filter(lambda t: t > first_timecode,
+                                         step_times(episode, second_timecode))
     kwargs['intermediate_times'] = intermediate_times(first_timecode, second_timecode)
+    # gif/webm range limits
+    kwargs['max_gif_secs'] = flask.current_app.config['MAX_GIF_LENGTH'].total_seconds()
+    kwargs['max_webm_secs'] = flask.current_app.config['MAX_WEBM_LENGTH'].total_seconds()
     # render template
     return flask.render_template('dual_moments.html', **kwargs)
 

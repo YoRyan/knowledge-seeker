@@ -1,42 +1,99 @@
 {% import 'browser.html' as browser %}
 {% extends 'base.html' %}
 
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='moment.css') }}">{% endblock %}
+{% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
+{% set duration = (second_timecode - first_timecode).total_seconds() %}
 
 {% block title %}
 {% if first_line is none %}
-{{ episode.name }} - {{ season.name }}
+        {{ episode.name }} - {{ season.name }}
 {% elif (second_line is none or first_line == second_line) %}
-"{{ first_line }}" - {{ episode.name }} - {{ season.name }}
+        "{{ first_line }}" - {{ episode.name }} - {{ season.name }}
 {% else %}
-"{{ first_line }}" / "{{ second_line }}" - {{ episode.name }} - {{ season.name }}
+        "{{ first_line }}" / "{{ second_line }}" - {{ episode.name }} - {{ season.name }}
 {% endif %}
 {% endblock %}
 
-{% block header %}<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> | <a href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">{{ episode.name }}</a>{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='moment.css') }}">
+{% endblock %}
+
+{% block header %}
+<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> |
+<a href="{{ url_for('explorer.browse_episode', **episode_kwargs) }}">{{ episode.name }}</a>
+{% endblock %}
 
 {% block content %}
 <section id="browser">
         <div id="start-nav">
-                {% call(nav_time) browser.show_nav_times(season, episode, first_timecode, first_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=nav_time, second_timecode=second_timecode) }}{% endcall %}
+{% call(nav_time)
+   browser.show_nav_times(season, episode, first_timecode, first_step_times) %}{{ url_for('explorer.browse_dual_moments', first_timecode=nav_time, second_timecode=second_timecode, **episode_kwargs) }}{% endcall %}
         </div>
         <div class="nav-intermediates">
-                <span class="nav-moment animation-start"><img src="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=first_timecode) }}" alt=""></span>
+                <span class="nav-moment animation-start">
+                        <img src="{{ url_for('clipper.snapshot_with_subtitles', timecode=first_timecode, **episode_kwargs) }}"
+                             alt="{{ first_timecode }}">
+                </span>
+
                 {% for time in intermediate_times %}
-                <span class="nav-moment animation-intermediate"><img src="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=time) }}" alt=""></span>
+                <span class="nav-moment animation-intermediate">
+                        <img src="{{ url_for('clipper.snapshot_with_subtitles', timecode=time, **episode_kwargs) }}"
+                             alt="{{ time }}">
+                </span>
                 {% endfor %}
-                <span class="nav-moment animation-end"><img src="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=second_timecode) }}" alt=""></span>
+                <span class="nav-moment animation-end">
+                        <img src="{{ url_for('clipper.snapshot_with_subtitles', timecode=second_timecode, **episode_kwargs) }}"
+                             alt="{{ second_timecode }}">
+                </span>
         </div>
         <div id="end-nav">
-                {% call(nav_time) browser.show_nav_times(season, episode, second_timecode, second_step_times) %}{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=first_timecode, second_timecode=nav_time) }}{% endcall %}
+{% call(nav_time)
+   browser.show_nav_times(season, episode, second_timecode, second_step_times) %}{{ url_for('explorer.browse_dual_moments', first_timecode=first_timecode, second_timecode=nav_time, **episode_kwargs) }}{% endcall %}
         </div>
 </section>
-<section id="dual-duration">{{ (second_timecode - first_timecode).total_seconds() }}s</section>
+
+<section id="dual-duration">
+        {{ duration }}s
+</section>
+
 <section id="dual-controls">
-        <a href="{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=first_timecode) }}" class="media-link" id="dual-split">Single View</a>
-        <a href="{{ url_for('clipper.gif', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF</a>
-        <a href="{{ url_for('clipper.gif_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link gif" target="_blank">GIF+Sub</a>
-        <a href="{{ url_for('clipper.webm', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM</a>
-        <a href="{{ url_for('clipper.webm_with_subtitles', season=season.slug, episode=episode.slug, start_timecode=first_timecode, end_timecode=second_timecode) }}" class="media-link webm" target="_blank">WEBM+Sub</a>
+        <a class="media-link"
+           id="dual-split"
+           href="{{ url_for('explorer.browse_moment', timecode=first_timecode, **episode_kwargs) }}">
+                Single View
+        </a>
+
+{% if duration <= max_gif_secs %}
+        <a class="media-link gif"
+           target="_blank"
+           href="{{ url_for('clipper.gif', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                GIF
+        </a>
+        <a class="media-link gif"
+           target="_blank"
+           href="{{ url_for('clipper.gif_with_subtitles', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                GIF+Sub
+        </a>
+{% else %}
+        <span class="media-link disabled">GIF</span>
+        <span class="media-link disabled">GIF+Sub</span>
+{% endif %}
+
+{% if duration <= max_webm_secs %}
+        <a class="media-link webm"
+           target="_blank"
+           href="{{ url_for('clipper.webm', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                WEBM
+        </a>
+        <a class="media-link webm"
+           target="_blank"
+           href="{{ url_for('clipper.webm_with_subtitles', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                WEBM+Sub
+        </a>
+{% else %}
+        <span class="media-link disabled">WEBM</span>
+        <span class="media-link disabled">WEBM+Sub</span>
+{% endif %}
 </section>
 {% endblock %}
+

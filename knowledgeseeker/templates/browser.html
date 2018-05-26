@@ -1,36 +1,72 @@
 {% macro show_time(season, episode, current_time, subtitles) -%}
+{% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
+
 <div class="preview-image">
-        <img alt="" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=current_time) }}">
+        <img src="{{ url_for('clipper.snapshot', timecode=current_time, **episode_kwargs) }}"
+             alt="{{ current_time }}">
 </div>
+
 <div class="preview-links">
-        <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=current_time) }}" class="media-link jpeg" target="_blank">JPEG</a>
-        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=current_time) }}" class="media-link jpeg" target="_blank">JPEG+Sub</a>
+        <a class="media-link jpeg"
+           target="_blank"
+           href="{{ url_for('clipper.snapshot', timecode=current_time, **episode_kwargs) }}">
+                JPEG
+        </a>
+        <a class="media-link jpeg"
+           target="_blank"
+           href="{{ url_for('clipper.snapshot_with_subtitles', timecode=current_time, **episode_kwargs) }}">
+                JPEG+Sub
+        </a>
 </div>
+
 <div class="subtitle-list">
-        {% for subtitle in subtitles %}
-        {% if subtitle.start <= current_time and subtitle.end >= current_time %}
+{% for subtitle in subtitles %}
+{% if subtitle.start <= current_time and subtitle.end >= current_time %}
         <span class="subtitle now">{{ subtitle.content|safe }}</span>
-        {% elif subtitle.start <= current_time %}
-        <span class="subtitle before"><a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a></span>
-        <img style="display: none;" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=subtitle.nav_timecode) }}" alt="">
-        {% else %}
-        <span class="subtitle start"><a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a></span>
-        <img style="display: none;" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=subtitle.nav_timecode) }}" alt="">
-        {% endif %}
-        {% endfor %}
+{% elif subtitle.start <= current_time %}
+        <span class="subtitle before">
+                <a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a>
+        </span>
+        <img style="display: none;"
+             src="{{ url_for('clipper.snapshot', timecode=subtitle.nav_timecode, **episode_kwargs) }}"
+             alt="">
+{% else %}
+        <span class="subtitle start">
+                <a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a>
+        </span>
+        <img style="display: none;"
+             src="{{ url_for('clipper.snapshot', timecode=subtitle.nav_timecode, **episode_kwargs) }}"
+             alt="">
+{% endif %}
+{% endfor %}
 </div>
 {%- endmacro %}
 
 {% macro show_nav_times(season, episode, current_time, step_times) -%}
+{% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
+
 <div class="nav-browser">
-        {% for step in step_times %}
-        {% if step == current_time %}
-        <span class="nav-moment now"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></span>
-        {% elif step < current_time %}
-        <a class="nav-moment {{ (current_time - step).total_seconds() }}s before" href="{{ caller(step) }}"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a>
-        {% else %}
-        <a class="nav-moment {{ (step - current_time).total_seconds() }}s after" href="{{ caller(step) }}"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a>
-        {% endif %}
-        {% endfor %}
+{% for step in step_times %}
+{% if step == current_time %}
+        <span class="nav-moment now">
+                <img src="{{ url_for('clipper.snapshot', timecode=step, **episode_kwargs) }}"
+                     alt="right now">
+        </span>
+{% elif step < current_time %}
+{% set offset = (current_time - step).total_seconds() %}
+        <a class="nav-moment {{ offset }}s before"
+           href="{{ caller(step) }}">
+                <img src="{{ url_for('clipper.snapshot', timecode=step, **episode_kwargs) }}"
+                     alt="{{ offset }}s behind">
+        </a>
+{% else %}
+{% set offset = (step - current_time).total_seconds() %}
+        <a class="nav-moment {{ offset }}s after"
+           href="{{ caller(step) }}">
+                <img src="{{ url_for('clipper.snapshot', timecode=step, **episode_kwargs) }}"
+                     alt="{{ offset }}s ahead">
+        </a>
+{% endif %}
+{% endfor %}
 </div>
 {%- endmacro %}

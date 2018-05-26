@@ -1,25 +1,39 @@
 {% import 'browser.html' as browser %}
 {% extends 'base.html' %}
 
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='moment.css') }}">{% endblock %}
+{% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
 
 {% block title %}
 {% if current_line is none %}
-{{ episode.name }} - {{ season.name }}
+        {{ episode.name }} - {{ season.name }}
 {% else %}
-"{{ current_line }}" - {{ episode.name}} - {{ season.name }}
+        "{{ current_line }}" - {{ episode.name}} - {{ season.name }}
 {% endif %}
 {% endblock %}
 
-{% block header %}<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> | <a href="{{ url_for('explorer.browse_episode', season=season.slug, episode=episode.slug) }}">{{ episode.name }}</a>{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='moment.css') }}">
+{% endblock %}
+
+{% block header %}
+<a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> |
+<a href="{{ url_for('explorer.browse_episode', **episode_kwargs) }}">{{ episode.name }}</a>
+{% endblock %}
 
 {% block content %}
 <section id="browser">
-        {% call(nav_time) browser.show_time(season, episode, timecode, subtitles) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
-        {% call(nav_time) browser.show_nav_times(season, episode, timecode, step_times) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
+{% call(nav_time)
+   browser.show_time(season, episode, timecode, subtitles) %}{{ url_for('explorer.browse_moment', timecode=nav_time, **episode_kwargs) }}{% endcall %}
+{% call(nav_time)
+   browser.show_nav_times(season, episode, timecode, step_times) %}{{ url_for('explorer.browse_moment', timecode=nav_time, **episode_kwargs) }}{% endcall %}
 </section>
+
 <section id="dual-controls">
-        <a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=timecode, second_timecode=timecode) }}" class="media-link" id="dual-split">Split View</a>
+        <a class="media-link"
+           id="dual-split"
+           href="{{ url_for('explorer.browse_dual_moments', first_timecode=split_timecodes[0], second_timecode=split_timecodes[1], **episode_kwargs) }}">
+                Split View
+        </a>
         <span class="media-link disabled">GIF</span>
         <span class="media-link disabled">GIF+Sub</span>
         <span class="media-link disabled">WEBM</span>
