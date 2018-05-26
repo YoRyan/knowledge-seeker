@@ -15,9 +15,8 @@
 
 {% block content %}
 <section id="browser">
-        <div>
-                {% call(nav_time, target) browser.show_time(season, episode, timecode, subtitles, step_times) %}{{ url_for(target, season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
-        </div>
+        {% call(nav_time) browser.show_time(season, episode, timecode, subtitles) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
+        {% call(nav_time) browser.show_nav_times(season, episode, timecode, step_times) %}{{ url_for('explorer.browse_moment', season=season.slug, episode=episode.slug, timecode=nav_time) }}{% endcall %}
 </section>
 <section id="dual-controls">
         <a href="{{ url_for('explorer.browse_dual_moments', season=season.slug, episode=episode.slug, first_timecode=timecode, second_timecode=timecode) }}" class="media-link" id="dual-split">Split View</a>

@@ -1,32 +1,35 @@
-{% macro show_time(season, episode, timecode, subtitles, step_times) -%}
+{% macro show_time(season, episode, current_time, subtitles) -%}
 <div class="preview-image">
-        <img alt="" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}">
+        <img alt="" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=current_time) }}">
 </div>
 <div class="preview-links">
-        <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG</a>
-        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=timecode) }}" class="media-link jpeg" target="_blank">JPEG+Sub</a>
+        <a href="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=current_time) }}" class="media-link jpeg" target="_blank">JPEG</a>
+        <a href="{{ url_for('clipper.snapshot_with_subtitles', season=season.slug, episode=episode.slug, timecode=current_time) }}" class="media-link jpeg" target="_blank">JPEG+Sub</a>
 </div>
 <div class="subtitle-list">
         {% for subtitle in subtitles %}
-        {% if subtitle.start <= timecode and subtitle.end >= timecode %}
+        {% if subtitle.start <= current_time and subtitle.end >= current_time %}
         <span class="subtitle now">{{ subtitle.content|safe }}</span>
-        {% elif subtitle.start <= timecode %}
-        <span class="subtitle before"><a href="{{ caller(subtitle.nav_timecode, 'explorer.browse_moment') }}">{{ subtitle.content|safe }}</a></span>
-        <img style="display: none;" src="{{ caller(subtitle.nav_timecode, 'clipper.snapshot') }}">
+        {% elif subtitle.start <= current_time %}
+        <span class="subtitle before"><a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a></span>
+        <img style="display: none;" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=subtitle.nav_timecode) }}" alt="">
         {% else %}
-        <span class="subtitle start"><a href="{{ caller(subtitle.nav_timecode, 'explorer.browse_moment') }}">{{ subtitle.content|safe }}</a></span>
-        <img style="display: none;" src="{{ caller(subtitle.nav_timecode, 'clipper.snapshot') }}">
+        <span class="subtitle start"><a href="{{ caller(subtitle.nav_timecode) }}">{{ subtitle.content|safe }}</a></span>
+        <img style="display: none;" src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=subtitle.nav_timecode) }}" alt="">
         {% endif %}
         {% endfor %}
 </div>
+{%- endmacro %}
+
+{% macro show_nav_times(season, episode, current_time, step_times) -%}
 <div class="nav-browser">
         {% for step in step_times %}
-        {% if step == timecode %}
+        {% if step == current_time %}
         <span class="nav-moment now"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></span>
-        {% elif step < timecode %}
-        <a class="nav-moment {{ (timecode - step).total_seconds() }}s before" href="{{ caller(step, 'explorer.browse_moment') }}"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a>
+        {% elif step < current_time %}
+        <a class="nav-moment {{ (current_time - step).total_seconds() }}s before" href="{{ caller(step) }}"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a>
         {% else %}
-        <a class="nav-moment {{ (step - timecode).total_seconds() }}s after" href="{{ caller(step, 'explorer.browse_moment') }}"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a>
+        <a class="nav-moment {{ (step - current_time).total_seconds() }}s after" href="{{ caller(step) }}"><img src="{{ url_for('clipper.snapshot', season=season.slug, episode=episode.slug, timecode=step) }}"></a>
         {% endif %}
         {% endfor %}
 </div>

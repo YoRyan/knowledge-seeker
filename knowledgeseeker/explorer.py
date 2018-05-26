@@ -84,7 +84,6 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
                                 'nav_timecode': nav_timecode(subtitle),
                                 'content': subtitle.content }
     kwargs['first_subtitles'] = [render(subtitle) for subtitle in first_subtitles]
-    kwargs['second_subtitles'] = [render(subtitle) for subtitle in second_subtitles]
     # page title
     kwargs['first_line'] = current_line(episode, first_timecode)
     kwargs['second_line'] = current_line(episode, second_timecode)
