@@ -174,7 +174,7 @@ def ffmpeg_run_stdout(stream, stdin=None):
             .replace('\\\\\\\\\\\\\\', '\\\\\\')
             .replace('\\\\\\\\\\\\', '\\\\\\')
             for a in args]
-    if current_app.config['DEV']:
+    if not current_app.config['DEV']:
         process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     else:
