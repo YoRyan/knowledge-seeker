@@ -62,6 +62,11 @@ nav > .rightside {
 nav > .rightside > a {
         text-decoration: none;
 }
+nav .season-icon {
+        width: auto;
+        height: 2rem;
+        vertical-align: middle;
+}
 
 /* fancy buttons */
 .media-link {

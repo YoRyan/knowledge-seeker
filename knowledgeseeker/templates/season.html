@@ -6,7 +6,14 @@
 
 {% block title %}{{ season.name }}{% endblock %}
 
-{% block header %}{{ season.name }}{% endblock %}
+{% block header %}
+{% if season.icon is not none %}
+<img class="season-icon"
+     src="{{ url_for('explorer.season_icon', season=season.slug) }}"
+     alt="">
+{% endif %}
+{{ season.name }}
+{% endblock %}
 
 {% block content %}
 <section class="season-standalone">

@@ -16,6 +16,11 @@
 {% endblock %}
 
 {% block header %}
+{% if season.icon is not none %}
+<img class="season-icon"
+     src="{{ url_for('explorer.season_icon', season=season.slug) }}"
+     alt="">
+{% endif %}
 <a href="{{ url_for('explorer.browse_season', season=season.slug) }}">{{ season.name }}</a> |
 <a href="{{ url_for('explorer.browse_episode', **episode_kwargs) }}">{{ episode.name }}</a>
 {% endblock %}

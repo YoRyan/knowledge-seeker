@@ -16,6 +16,16 @@ def browse_index():
 def browse_season(season):
     return flask.render_template('season.html', season=season)
 
+@bp.route('/<season>/icon')
+@match_season
+def season_icon(season):
+    if season.icon is None:
+        flask.abort(404, 'no icon available')
+
+    response = flask.make_response(season.icon)
+    response.headers.set('Content-Type', season.icon_mime)
+    return response
+
 @bp.route('/<season>/<episode>/')
 @match_season_episode
 @episode_has_subtitles

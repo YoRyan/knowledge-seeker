@@ -4,6 +4,7 @@ import os
 import pickle
 from flask import current_app
 from flask.cli import with_appcontext
+from mimetypes import guess_type
 from pathlib import Path
 from shutil import rmtree
 from srt import parse as parse_srt
@@ -18,10 +19,16 @@ class LoadError(Exception):
     pass
 
 class Season(object):
-    def __init__(self, slug, name=None, episodes=[]):
+    def __init__(self, slug, name=None, episodes=[], icon_path=None):
         self.slug = slug
         self.name = name
         self.episodes = episodes
+        if icon_path is not None:
+            with open(icon_path, 'rb') as f:
+                self.icon = f.read()
+            self.icon_mime = guess_type(str(icon_path))[0]
+        else:
+            self.icon = None
 
 class Episode(object):
     def __init__(self, slug, video_path, name=None, subtitles_path=None,
@@ -89,38 +96,33 @@ def load_library_file(library_path):
 
 def read_season_json(season_data, relative_to_path=Path('.')):
     slug = season_data['seasonSlug']
+    name = season_data.get('seasonName', None)
 
-    if 'seasonName' in season_data:
-        name = season_data['seasonName']
-    else:
-        name = None
+    icon = season_data.get('seasonIcon', None)
+    if icon is not None:
+        icon = relative_to_path / Path(icon)
 
-    if 'episodes' in season_data:
+    episodes = season_data.get('episodes', [])
+    if episodes != []:
         episodes = [read_episode_json(episode_data, relative_to_path=relative_to_path)
                     for episode_data in season_data['episodes']]
-    else:
-        episodes = []
 
-    return Season(slug, name=name, episodes=episodes)
+    return Season(slug, name=name, episodes=episodes, icon_path=icon)
 
 def read_episode_json(episode_data, relative_to_path=Path('.')):
     slug = episode_data['episodeSlug']
     video = relative_to_path / Path(episode_data['videoFile'])
+    name = episode_data.get('episodeName', None)
 
-    if 'subtitleFile' in episode_data:
-        subtitles_path = relative_to_path / Path(episode_data['subtitleFile'])
+    subtitles_path = episode_data.get('subtitleFile', None)
+    if subtitles_path is not None:
+        subtitles_path = relative_to_path / Path(subtitles_path)
         with open(subtitles_path) as f:
             contents = f.read()
         subtitles = list(parse_srt(contents))
         subtitles.sort(key=lambda s: s.index)
     else:
-        subtitles_path = None
         subtitles = []
-
-    if 'episodeName' in episode_data:
-        name = episode_data['episodeName']
-    else:
-        name = None
 
     return Episode(slug, video, name=name, subtitles_path=subtitles_path,
                    subtitles=subtitles)
