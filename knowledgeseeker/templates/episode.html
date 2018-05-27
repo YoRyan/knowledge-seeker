@@ -17,7 +17,9 @@
 
 {% block content %}
 <section>
-        {% for subtitle in subtitles %}
+{% for subtitle in subtitles %}
+        {% set start = subtitle.start.str_seconds() %}
+        {% set end = subtitle.end.str_seconds() %}
         <a class="subtitle"
            style="margin-top: {{ subtitle.time_since_last }}rem;"
            href="{{ url_for('explorer.browse_moment', timecode=subtitle.nav, **episode_kwargs) }}">
@@ -25,11 +27,15 @@
                         <img class="image"
                              src="{{ url_for('clipper.snapshot_tiny', timecode=subtitle.preview, **episode_kwargs) }}"
                              alt="">
-                        <span class="timecode subtitle-range">{{ subtitle.range }}</span>
+        {% if start == end %}
+                        <span class="timecode subtitle-range">{{ start }}</span>
+        {% else %}
+                        <span class="timecode subtitle-range">{{ start }} - {{ end }}</span>
+        {% endif %}
                 </span>
-                <span class="subtitle-text">{{ subtitle.text|safe }}</span>
+                <span class="subtitle-text">{{ subtitle.content|safe }}</span>
         </a>
-        {% endfor %}
+{% endfor %}
 </section>
 {% endblock %}
 

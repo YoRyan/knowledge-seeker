@@ -7,16 +7,14 @@ from .utils import (Timecode, match_season, match_season_episode,
 
 bp = flask.Blueprint('explorer', __name__)
 
+@bp.route('/')
+def browse_index():
+    return flask.render_template('index.html', seasons=flask.current_app.library_data)
+
 @bp.route('/<season>/')
 @match_season
 def browse_season(season):
-    render = lambda episode: { 'timecode': episode.duration/2,
-                               'duration': strptimecode(episode.duration),
-                               'name': episode.name,
-                               'slug': episode.slug }
-    return flask.render_template('season.html',
-                                 season=season,
-                                 episodes=[render(episode) for episode in season.episodes])
+    return flask.render_template('season.html', season=season)
 
 @bp.route('/<season>/<episode>/')
 @match_season_episode
@@ -29,14 +27,11 @@ def browse_episode(season, episode):
             time_since_last = (s.start - last_subtitle.start).total_seconds()
         else:
             time_since_last = 0
-        if s.end - s.start < timedelta(seconds=1):
-            timecodes = strptimecode(s.start)
-        else:
-            timecodes = '%s - %s' % (strptimecode(s.start), strptimecode(s.end))
         rendered_subtitles.append({ 'preview': s.preview,
+                                    'start': s.start,
+                                    'end': s.end,
                                     'nav': s.nav,
-                                    'range': timecodes,
-                                    'text': s.content,
+                                    'content': s.content,
                                     'time_since_last': time_since_last })
         last_subtitle = s
     return flask.render_template('episode.html',
@@ -96,15 +91,6 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     kwargs['max_webm_secs'] = flask.current_app.config['MAX_WEBM_LENGTH'].total_seconds()
     # render template
     return flask.render_template('dual_moments.html', **kwargs)
-
-def strptimecode(td):
-    hours = td.total_seconds() // 60 // 60
-    minutes = td.total_seconds() // 60 % 60
-    seconds = td.total_seconds() % 60
-    if hours > 0:
-        return '%d:%02d:%02d' % (hours, minutes, seconds)
-    else:
-        return '%d:%02d' % (minutes, seconds)
 
 def surrounding_subtitles(episode, timecode):
     N_SURROUNDING = 2

@@ -4,12 +4,19 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 {% endblock %}
 
-{% block title %}{{ season.name }}{% endblock %}
+{% block title %}Index{% endblock %}
 
-{% block header %}{{ season.name }}{% endblock %}
+{% block header %}Index{% endblock %}
 
 {% block content %}
-<section class="season-standalone">
+{% for season in seasons %}
+<section class="season-index">
+        <h2>
+                <a class="season"
+                   href="{{ url_for('explorer.browse_season', season=season.slug) }}">
+                        {{ season.name }}
+                </a>
+        </h2>
 {% for episode in season.episodes %}
 {% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
         <a class="episode"
@@ -24,4 +31,5 @@
         </a>
 {% endfor %}
 </section>
+{% endfor %}
 {% endblock %}

@@ -41,6 +41,15 @@ class Timecode(timedelta):
             return Timecode(hours=hours, minutes=minutes, milliseconds=milliseconds)
         else:
             raise ValueError('invalid timecode format: \'%s\'' % tc)
+    def str_seconds(self):
+        s = self.total_seconds()
+        hours = s // 60 // 60
+        minutes = s // 60 % 60
+        seconds = s % 60
+        if hours > 0:
+            return '%d:%02d:%02d' % (hours, minutes, seconds)
+        else:
+            return '%d:%02d' % (minutes, seconds)
     def from_timedelta(td):
         return Timecode(days=td.days, seconds=td.seconds, microseconds=td.microseconds)
 
