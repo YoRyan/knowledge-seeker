@@ -85,11 +85,10 @@
 #dual-controls {
         position: relative;
         top: 2rem;
-        text-align: center;
+        text-align: right;
 }
 .split-links {
         float: left;
-        text-align: left;
 }
 .media-link.split {
         border-color: var(--split-color);
@@ -99,13 +98,6 @@
 .media-link.split:hover {
         color: var(--split-color);
         background-color: white;
-}
-.video-links {
-        float: right;
-}
-.split-links,
-.video-links {
-        width: 20rem;
 }
 
 /* dual browsing only */
