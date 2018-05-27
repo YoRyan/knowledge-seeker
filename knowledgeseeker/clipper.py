@@ -10,7 +10,7 @@ from wsgiref.handlers import format_date_time
 
 from . import cache
 from .utils import (Timecode, match_season_episode, episode_has_subtitles,
-                    parse_timecode, check_timecode_range)
+                    parse_timecode, check_timecode_range, static_cached)
 from .video import (make_snapshot, make_snapshot_with_subtitles, make_tiny_snapshot,
                     make_gif, make_gif_with_subtitles,
                     make_webm, make_webm_with_subtitles)
@@ -41,15 +41,11 @@ def snapshot_with_subtitles(season, episode, timecode):
     return response
 
 @bp.route('/<season>/<episode>/<timecode>/pic/tiny')
+@static_cached
 @match_season_episode
 @parse_timecode('timecode')
 def snapshot_tiny(season, episode, timecode):
-    # If there's a cached preview image, serve that
-    cached = flask.current_app.preview_cache.serve(season, episode, timecode)
-    if cached is not None:
-        data = cached
-    else:
-        data = make_tiny_snapshot(episode.video_path, timecode)
+    data = make_tiny_snapshot(episode.video_path, timecode)
     response = flask.make_response(data)
     response.headers.set('Content-Type', 'image/jpeg')
     set_expires_header(response, flask.current_app.config['HTTP_CACHE_EXPIRES'])

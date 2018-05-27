@@ -16,14 +16,15 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import clipper
+    from . import clipper, explorer
     app.register_blueprint(clipper.bp)
-
-    from . import explorer
     app.register_blueprint(explorer.bp)
 
     from . import library
     library.init_app(app)
+
+    from . import scache
+    scache.init_app(app)
 
     init_app(app)
 

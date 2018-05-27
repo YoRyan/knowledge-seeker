@@ -126,3 +126,13 @@ def check_timecode_range(start_var, end_var, get_max_length):
         return decorator
     return wrapper
 
+def static_cached(f):
+    @wraps(f)
+    def decorator(**kwargs):
+        cached = flask.current_app.static_cache.serve(flask.request.endpoint, **kwargs)
+        if cached is not None:
+            return cached
+        else:
+            return f(**kwargs)
+    return decorator
+

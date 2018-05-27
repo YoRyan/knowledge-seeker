@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 LIBRARY = 'library/atla.json'
+CACHE = 'library/cache'
 SUBTITLES_FONTSDIR = 'library/'
 SUBTITLES_FONT = 'Herculanum'
 
