@@ -59,9 +59,9 @@ def browse_moment(season, episode, timecode):
     kwargs['timecode'] = timecode
     # timecodes for split command
     if timecode == episode.duration:
-        split_timecodes = [timecode - timedelta(seconds=0.1), timecode]
+        split_timecodes = [timecode - timedelta(seconds=3), timecode]
     else:
-        split_timecodes = [timecode, timecode + timedelta(seconds=0.1)]
+        split_timecodes = [timecode, timecode + timedelta(seconds=3)]
     kwargs['split_timecodes'] = split_timecodes
     # surrounding subtitles
     kwargs['subtitles'] = surrounding_subtitles(episode, timecode)
@@ -80,6 +80,12 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     if second_timecode <= first_timecode:
         flask.abort(400, 'bad time range')
 
+    max_duration = max(flask.current_app.config['MAX_GIF_LENGTH'].total_seconds(),
+                       flask.current_app.config['MAX_WEBM_LENGTH'].total_seconds())
+    max_second_timecode = first_timecode + timedelta(seconds=max_duration)
+    if second_timecode > max_second_timecode:
+        flask.abort(400, 'time range too large')
+
     kwargs = {}
     kwargs['season'] = season
     kwargs['episode'] = episode
@@ -93,7 +99,8 @@ def browse_dual_moments(season, episode, first_timecode, second_timecode):
     # navigation previews
     kwargs['first_step_times'] = filter(lambda t: t < second_timecode,
                                         step_times(episode, first_timecode))
-    kwargs['second_step_times'] = filter(lambda t: t > first_timecode,
+    kwargs['second_step_times'] = filter(lambda t: (t > first_timecode and
+                                                    t <= max_second_timecode),
                                          step_times(episode, second_timecode))
     kwargs['intermediate_times'] = intermediate_times(first_timecode, second_timecode)
     # gif/webm range limits
