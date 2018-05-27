@@ -54,17 +54,25 @@
         </span>
 {% elif step < current_time %}
 {% set offset = (current_time - step).total_seconds() %}
-        <a class="nav-moment {{ offset }}s before"
+        <a class="nav-moment past"
            href="{{ caller(step) }}">
                 <img src="{{ url_for('clipper.snapshot', timecode=step, **episode_kwargs) }}"
                      alt="{{ offset }}s behind">
+                <span class="offset">
+                        <span class="fill"></span>
+                        <span class="value">-{{ offset }}s</span>
+                </span>
         </a>
 {% else %}
 {% set offset = (step - current_time).total_seconds() %}
-        <a class="nav-moment {{ offset }}s after"
+        <a class="nav-moment future"
            href="{{ caller(step) }}">
                 <img src="{{ url_for('clipper.snapshot', timecode=step, **episode_kwargs) }}"
                      alt="{{ offset }}s ahead">
+                <span class="offset">
+                        <span class="fill"></span>
+                        <span class="value">+{{ offset }}s</span>
+                </span>
         </a>
 {% endif %}
 {% endfor %}
