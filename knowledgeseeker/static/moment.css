@@ -44,7 +44,7 @@
         position: relative;
         width: 10%;
         margin: 0.2rem;
-        border: 0.2rem solid white;
+        border: 4px solid white;
 }
 .nav-moment.now {
         border-color: var(--current-time-color);
@@ -109,15 +109,15 @@
         width: 18%;
 }
 .intermediate-moment {
-        border: 0.2rem solid var(--intermediate-time-color);
+        border: 4px solid var(--intermediate-time-color);
 }
 .intermediate-moment.start,
 .start-nav .nav-moment.now {
-        border: 0.2rem solid var(--start-time-color);
+        border: 4px solid var(--start-time-color);
 }
 .intermediate-moment.end,
 .end-nav .nav-moment.now {
-        border: 0.2rem solid var(--end-time-color);
+        border: 4px solid var(--end-time-color);
 }
 .intermediate-moment > .time {
         position: absolute;
