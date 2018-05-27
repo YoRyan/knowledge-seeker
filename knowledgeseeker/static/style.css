@@ -3,6 +3,7 @@
         --gif-color: #cf0000;
         --webm-color: #009a12;
         --split-color: #a400ff;
+        --sans-font: sans-serif;
 }
 * {
         margin: 0;
@@ -43,6 +44,7 @@ a:hover, a:focus {
         background-color: black;
         color: white;
         text-align: center;
+        font-family: var(--sans-font);
         font-size: 90%;
 }
 
@@ -76,6 +78,7 @@ nav .season-icon {
         padding: 0.4rem;
         border-radius: 0.5rem;
         border: 0.1rem solid;
+        font-family: var(--sans-font);
 }
 .media-link.disabled {
         border-color: grey;

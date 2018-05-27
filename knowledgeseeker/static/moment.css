@@ -69,6 +69,7 @@
 .nav-moment > .offset > .value {
         position: relative;
         font-size: 90%;
+        font-family: var(--sans-font);
         color: white;
 }
 .nav-moment > .offset > .fill {
@@ -135,6 +136,7 @@
 .intermediate-moment > .time > .value {
         position: relative;
         font-size: 120%;
+        font-family: var(--sans-font);
         color: white;
 }
 .intermediate-moment > .time > .fill {
