@@ -1,13 +1,20 @@
-/* episode page */
+.season-index {
+        margin-bottom: 4rem;
+}
+.season-index > h2 {
+        text-align: center;
+}
+
 .episode {
         display: block;
         text-decoration: none;
         margin: 0.5rem 0;
 }
-.episode > *{
+.episode > * {
         vertical-align: middle;
 }
 .episode-name {
-        font-size: 250%;
+        margin-left: 1rem;
+        font-size: 150%;
 }
 

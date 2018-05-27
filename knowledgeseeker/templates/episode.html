@@ -21,7 +21,7 @@
         {% set start = subtitle.start.str_seconds() %}
         {% set end = subtitle.end.str_seconds() %}
         <a class="subtitle"
-           style="margin-top: {{ subtitle.time_since_last }}rem;"
+           style="margin-top: {{ subtitle.time_since_last*0.4 }}rem;"
            href="{{ url_for('explorer.browse_moment', timecode=subtitle.nav, **episode_kwargs) }}">
                 <span class="image-timecode-wrap">
                         <img class="image"

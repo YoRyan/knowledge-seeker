@@ -10,7 +10,9 @@
 <body>
 <nav>
         <h1>{% block header %}{% endblock %}</h1>
-        <div id="header-rightside">Knowledge Seeker</div>
+        <div class="rightside">
+                <a href="{{ url_for('explorer.browse_index') }}">Knowledge Seeker</a>
+        </div>
 </nav>
 {% block content %}{% endblock %}
 </body>

@@ -28,7 +28,7 @@ a:hover, a:focus {
 .image-timecode-wrap {
         position: relative;
         display: inline-block;
-        height: 6rem;
+        height: 5rem;
 }
 .image-timecode-wrap > img {
         display: block;
@@ -43,19 +43,24 @@ a:hover, a:focus {
         background-color: black;
         color: white;
         text-align: center;
+        font-size: 90%;
 }
 
 /* common header */
 nav {
         padding: 1rem;
+        border-bottom: 0.1rem dotted grey;
 }
 nav > h1 {
         float: left;
         font-size: 2rem;
 }
-nav > #header-rightside {
+nav > .rightside {
         text-align: right;
         font-size: 2rem;
+}
+nav > .rightside > a {
+        text-decoration: none;
 }
 
 /* fancy buttons */

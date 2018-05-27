@@ -6,6 +6,14 @@
         vertical-align: middle;
 }
 .subtitle-text {
-        font-size: 200%;
+        margin-left: 1rem;
+        font-size: 110%;
+}
+
+.image-timecode-wrap {
+        height: 4rem;
+}
+.image-timecode-wrap > .timecode {
+        font-size: 80%;
 }
 
