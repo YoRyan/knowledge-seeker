@@ -101,21 +101,39 @@
         text-align: center;
         margin: 3rem 0;
 }
-.nav-moment.animation-start,
-.nav-moment.animation-intermediate,
-.nav-moment.animation-end {
+.intermediate-moment {
         width: 18%;
 }
-.nav-moment.animation-start,
-#start-nav .nav-moment.now {
-        border: 0.2rem solid var(--start-time-color);
-}
-.nav-moment.animation-intermediate {
+.intermediate-moment {
         border: 0.2rem solid var(--intermediate-time-color);
 }
-.nav-moment.animation-end,
-#end-nav .nav-moment.now {
+.intermediate-moment.start,
+.start-nav .nav-moment.now {
+        border: 0.2rem solid var(--start-time-color);
+}
+.intermediate-moment.end,
+.end-nav .nav-moment.now {
         border: 0.2rem solid var(--end-time-color);
+}
+.intermediate-moment > .time {
+        position: absolute;
+        top: 0.5rem;
+        left: 35%;
+        right: 35%;
+}
+.intermediate-moment > .time > .value {
+        position: relative;
+        font-size: 120%;
+        color: white;
+}
+.intermediate-moment > .time > .fill {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        opacity: 0.6;
+        background-color: black;
 }
 #dual-duration {
         text-align: center;

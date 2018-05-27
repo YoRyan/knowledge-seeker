@@ -30,28 +30,44 @@
 
 {% block content %}
 <section id="browser">
-        <div id="start-nav">
+        <div class="start-nav">
 {% call(nav)
    browser.show_nav_times(season, episode, first_timecode, first_step_times) %}{{ url_for('explorer.browse_dual_moments', first_timecode=nav, second_timecode=second_timecode, **episode_kwargs) }}{% endcall %}
         </div>
         <div class="nav-intermediates">
-                <span class="nav-moment animation-start">
+                <span class="nav-moment intermediate-moment start">
                         <img src="{{ url_for('clipper.snapshot_with_subtitles', timecode=first_timecode, **episode_kwargs) }}"
                              alt="{{ first_timecode }}">
+                        <span class="time">
+                                <span class="fill"></span>
+                                <span class="value">0.0s</span>
+                        </span>
                 </span>
 
-                {% for time in intermediate_times %}
-                <span class="nav-moment animation-intermediate">
+        {% for time in intermediate_times %}
+                <span class="nav-moment intermediate-moment">
                         <img src="{{ url_for('clipper.snapshot_with_subtitles', timecode=time, **episode_kwargs) }}"
                              alt="{{ time }}">
+                        <span class="time">
+                                <span class="fill"></span>
+                                <span class="value">
+                                        {{ (time - first_timecode).total_seconds() }}s
+                                </span>
+                        </span>
                 </span>
-                {% endfor %}
-                <span class="nav-moment animation-end">
+        {% endfor %}
+                <span class="nav-moment intermediate-moment end">
                         <img src="{{ url_for('clipper.snapshot_with_subtitles', timecode=second_timecode, **episode_kwargs) }}"
                              alt="{{ second_timecode }}">
+                        <span class="time">
+                                <span class="fill"></span>
+                                <span class="value">
+                                        {{ (second_timecode - first_timecode).total_seconds() }}s
+                                </span>
+                        </span>
                 </span>
         </div>
-        <div id="end-nav">
+        <div class="end-nav">
 {% call(nav)
    browser.show_nav_times(season, episode, second_timecode, second_step_times) %}{{ url_for('explorer.browse_dual_moments', first_timecode=first_timecode, second_timecode=nav, **episode_kwargs) }}{% endcall %}
         </div>
