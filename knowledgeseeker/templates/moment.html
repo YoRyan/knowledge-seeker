@@ -34,14 +34,17 @@
 </section>
 
 <section id="dual-controls">
-        <a class="media-link"
-           id="dual-split"
-           href="{{ url_for('explorer.browse_dual_moments', first_timecode=split_timecodes[0], second_timecode=split_timecodes[1], **episode_kwargs) }}">
-                Split View
-        </a>
-        <span class="media-link disabled">GIF</span>
-        <span class="media-link disabled">GIF+Sub</span>
-        <span class="media-link disabled">WEBM</span>
-        <span class="media-link disabled">WEBM+Sub</span>
+        <span class="split-links">
+                <a class="media-link split"
+                   href="{{ url_for('explorer.browse_dual_moments', first_timecode=split_timecodes[0], second_timecode=split_timecodes[1], **episode_kwargs) }}">
+                        Split View
+                </a>
+        </span>
+        <span class="video-links">
+                <span class="media-link disabled">GIF</span>
+                <span class="media-link disabled">GIF+Sub</span>
+                <span class="media-link disabled">WEBM</span>
+                <span class="media-link disabled">WEBM+Sub</span>
+        </span>
 </section>
 {% endblock %}

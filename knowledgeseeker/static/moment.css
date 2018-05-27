@@ -86,14 +86,25 @@
         top: 2rem;
         text-align: center;
 }
-#dual-split {
+.split-links {
+        float: left;
+        text-align: left;
+}
+.media-link.split {
         border-color: var(--split-color);
         background-color: var(--split-color);
         color: white;
 }
-#dual-split:hover {
+.media-link.split:hover {
         color: var(--split-color);
         background-color: white;
+}
+.video-links {
+        float: right;
+}
+.split-links,
+.video-links {
+        width: 20rem;
 }
 
 /* dual browsing only */
@@ -135,7 +146,8 @@
         opacity: 0.6;
         background-color: black;
 }
-#dual-duration {
-        text-align: center;
+.dual-duration {
+        position: relative;
+        top: -0.5rem;
         font-size: 3rem;
 }

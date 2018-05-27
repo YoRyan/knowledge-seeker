@@ -73,48 +73,49 @@
         </div>
 </section>
 
-<section id="dual-duration">
-        {{ duration }}s
-</section>
-
 <section id="dual-controls">
-        <a class="media-link"
-           id="dual-split"
-           href="{{ url_for('explorer.browse_moment', timecode=first_timecode, **episode_kwargs) }}">
-                Single View
-        </a>
+        <span class="split-links">
+                <a class="media-link split"
+                   href="{{ url_for('explorer.browse_moment', timecode=first_timecode, **episode_kwargs) }}">
+                        Single View
+                </a>
+        </span>
 
+        <span class="dual-duration">{{ duration }}s</span>
+
+        <span class="video-links">
 {% if duration <= max_gif_secs %}
-        <a class="media-link gif"
-           target="_blank"
-           href="{{ url_for('clipper.gif', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
-                GIF
-        </a>
-        <a class="media-link gif"
-           target="_blank"
-           href="{{ url_for('clipper.gif_with_subtitles', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
-                GIF+Sub
-        </a>
+                <a class="media-link gif"
+                   target="_blank"
+                   href="{{ url_for('clipper.gif', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                        GIF
+                </a>
+                <a class="media-link gif"
+                   target="_blank"
+                   href="{{ url_for('clipper.gif_with_subtitles', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                        GIF+Sub
+                </a>
 {% else %}
-        <span class="media-link disabled">GIF</span>
-        <span class="media-link disabled">GIF+Sub</span>
+                <span class="media-link disabled">GIF</span>
+                <span class="media-link disabled">GIF+Sub</span>
 {% endif %}
 
 {% if duration <= max_webm_secs %}
-        <a class="media-link webm"
-           target="_blank"
-           href="{{ url_for('clipper.webm', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
-                WEBM
-        </a>
-        <a class="media-link webm"
-           target="_blank"
-           href="{{ url_for('clipper.webm_with_subtitles', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
-                WEBM+Sub
-        </a>
+                <a class="media-link webm"
+                   target="_blank"
+                   href="{{ url_for('clipper.webm', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                        WEBM
+                </a>
+                <a class="media-link webm"
+                   target="_blank"
+                   href="{{ url_for('clipper.webm_with_subtitles', start_timecode=first_timecode, end_timecode=second_timecode, **episode_kwargs) }}">
+                        WEBM+Sub
+                </a>
 {% else %}
-        <span class="media-link disabled">WEBM</span>
-        <span class="media-link disabled">WEBM+Sub</span>
+                <span class="media-link disabled">WEBM</span>
+                <span class="media-link disabled">WEBM+Sub</span>
 {% endif %}
+        </span>
 </section>
 {% endblock %}
 
