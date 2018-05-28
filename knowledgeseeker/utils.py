@@ -1,8 +1,9 @@
 import flask
 import re
-
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import wraps
+from time import mktime
+from wsgiref.handlers import format_date_time
 
 class Timecode(timedelta):
     def __str__(self):
@@ -125,6 +126,15 @@ def check_timecode_range(start_var, end_var, get_max_length):
                 return f(**kwargs)
         return decorator
     return wrapper
+
+def set_expires(f):
+    @wraps(f)
+    def decorator(**kwargs):
+        response = f(**kwargs)
+        date = datetime.now() + flask.current_app.config['HTTP_CACHE_EXPIRES']
+        response.headers.set('Expires', format_date_time(mktime(date.timetuple())))
+        return response
+    return decorator
 
 def static_cached(f):
     @wraps(f)

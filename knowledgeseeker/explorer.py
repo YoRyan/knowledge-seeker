@@ -3,7 +3,7 @@ import re
 from datetime import timedelta
 
 from .utils import (Timecode, match_season, match_season_episode,
-                    episode_has_subtitles, parse_timecode)
+                    episode_has_subtitles, parse_timecode, set_expires)
 
 bp = flask.Blueprint('explorer', __name__)
 
@@ -18,6 +18,7 @@ def browse_season(season):
 
 @bp.route('/<season>/icon')
 @match_season
+@set_expires
 def season_icon(season):
     if season.icon is None:
         flask.abort(404, 'no icon available')
