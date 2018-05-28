@@ -10,6 +10,7 @@ setup(
         'flask',
         'Flask-Caching',
         'ffmpeg-python',
-        'srt'
+        'srt',
+        'whoosh'
     ],
 )
