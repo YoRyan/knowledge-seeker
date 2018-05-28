@@ -1,3 +1,4 @@
+{% import 'base.html' as base %}
 {% import 'browser.html' as browser %}
 {% extends 'base.html' %}
 
@@ -16,6 +17,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='moment.css') }}">
+{{ base.jquery() }}
 {% endblock %}
 
 {% block header %}
@@ -115,5 +117,7 @@
 {% endif %}
         </span>
 </section>
+
+<script src="{{ url_for('static', filename='moment.js') }}"></script>
 {% endblock %}
 

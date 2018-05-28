@@ -145,3 +145,30 @@
         top: -0.5rem;
         font-size: 3rem;
 }
+
+/* JS media pop-up */
+.media-dialog-wrapper {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 15%;
+        text-align: center;
+        cursor: pointer;
+}
+#media-dialog {
+        display: inline-block;
+        padding: 1rem;
+        background-color: white;
+        box-shadow: 0 0 30px black;
+        cursor: default;
+}
+.media-dialog-shade {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: black;
+        opacity: 0.4;
+        cursor: pointer;
+}
