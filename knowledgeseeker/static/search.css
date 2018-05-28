@@ -1,3 +1,16 @@
+form {
+        width: 40rem;
+        max-width: 90%;
+        margin: 1rem auto 0 auto;
+}
+form input {
+        width: calc(100% - 3.5rem);
+}
+form button {
+        width: 3rem;
+        margin-left: 0.5rem;
+}
+
 .result {
         text-decoration: none;
 }

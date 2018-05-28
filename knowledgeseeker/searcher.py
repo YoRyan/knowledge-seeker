@@ -25,9 +25,9 @@ def do_search():
     if search_query is None:
         return flask.redirect(flask.url_for('explorer.browse_index'))
 
-    search_query = re.sub(r'[^a-zA-Z0-9% ]', '', search_query)
-    search_query = search_query[0:QUERY_STRING_MAX_LENGTH]
     search_query = unquote(search_query)
+    search_query = re.sub(r'[^a-zA-Z0-9 ]', '', search_query)
+    search_query = search_query[0:QUERY_STRING_MAX_LENGTH]
 
     with index.searcher() as searcher:
         query = QueryParser('content', index.schema).parse(search_query)
