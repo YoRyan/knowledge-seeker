@@ -1,3 +1,4 @@
+from click import echo
 from flask import current_app, make_response, url_for
 from mimetypes import guess_extension, guess_type
 from os import makedirs, remove
@@ -40,7 +41,7 @@ class StaticCache(object):
         # Encode the MIME type in a file extension, which can be recognized by
         # this program and by a web server
         extension = guess_extension(mimetype)
-        item_path = self._item_path(endpoint, mimetype, **values)
+        item_path = self._item_path(endpoint, **values)
         item_path = item_path.parent/(item_path.name + extension)
         makedirs(item_path.parent, exist_ok=True)
         with open(item_path, 'wb') as f:
@@ -49,6 +50,22 @@ class StaticCache(object):
     def _item_path(self, endpoint, **values):
         sub = url_for(endpoint, _external=False, **values).lstrip('/')
         return self.path/sub
+
+def init_cache(seasons):
+    def cache(season, episode, timecode):
+        current_app.static_cache.cache('clipper.snapshot_tiny', season=season.slug,
+                                       episode=episode.slug, timecode=str(timecode))
+    with current_app.test_request_context():
+        current_app.static_cache.reset()
+        for season in seasons:
+            echo(season.name)
+            for episode in season.episodes:
+                echo(' - %s' % episode.name)
+                # Cache episode preview
+                cache(season, episode, episode.preview)
+                # Cache subtitle previews
+                for subtitle in episode.subtitles:
+                    cache(season, episode, subtitle.preview)
 
 def init_app(app):
     cache_path = Path(app.config['CACHE'])

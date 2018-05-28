@@ -9,6 +9,7 @@ from pathlib import Path
 from srt import parse as parse_srt
 
 from .utils import Timecode
+from .scache import populate_cache
 from .video import FfprobeRuntimeError, video_duration
 
 LIBRARY_PICKLE_FILE = 'library_data.P'
@@ -107,25 +108,12 @@ def save_pickle_file(library_data, path):
 @click.command('read-library')
 @with_appcontext
 def read_library_command():
-    instance_path = Path(current_app.instance_path)
     # Probe library metadata
     library_data = load_library_file(Path(current_app.config['LIBRARY']))
+    instance_path = Path(current_app.instance_path)
     save_pickle_file(library_data, instance_path / LIBRARY_PICKLE_FILE)
     # Cache all episode and subtitle previews (takes a long time)
-    def cache(season, episode, timecode):
-        current_app.static_cache.cache('clipper.snapshot_tiny', season=season.slug,
-                                       episode=episode.slug, timecode=str(timecode))
-    with current_app.test_request_context():
-        current_app.static_cache.reset()
-        for season in library_data:
-            click.echo(season.name)
-            for episode in season.episodes:
-                click.echo(' - %s' % episode.name)
-                # Cache episode preview
-                cache(season, episode, episode.preview)
-                # Cache subtitle previews
-                for subtitle in episode.subtitles:
-                    cache(season, episode, subtitle.preview)
+    init_cache(library_data)
 
 def init_app(app):
     instance_path = Path(app.instance_path)
