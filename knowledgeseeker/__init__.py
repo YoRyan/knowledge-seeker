@@ -27,6 +27,7 @@ def create_app(test_config=None):
     scache.init_app(app)
 
     from . import searcher
+    app.register_blueprint(searcher.bp)
     searcher.init_app(app)
 
     init_app(app)

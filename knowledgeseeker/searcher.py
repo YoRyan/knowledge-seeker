@@ -1,20 +1,46 @@
+import flask
 import re
 import whoosh
 import whoosh.index
-from flask import current_app
 from pathlib import Path
 from shutil import rmtree
+from urllib.parse import unquote
 from whoosh.fields import Schema, ID, TEXT, STORED
+from whoosh.qparser import QueryParser
 
 INDEX_DIR = 'subtitle_index'
+QUERY_STRING_ENCODING = 'ascii'
+QUERY_STRING_MAX_LENGTH = 80
+N_RESULTS = 30
+
+bp = flask.Blueprint('searcher', __name__)
+
+@bp.route('/search')
+def do_search():
+    index = flask.current_app.subtitle_index
+    if index is None:
+        flask.abort(501, 'search not available')
+
+    search_query = flask.request.query_string.decode(QUERY_STRING_ENCODING)
+    search_query = re.sub(r'[^a-zA-Z0-9% ]', '', search_query)
+    search_query = search_query[0:QUERY_STRING_MAX_LENGTH]
+    search_query = unquote(search_query, encoding=QUERY_STRING_ENCODING)
+
+    with index.searcher() as searcher:
+        query = QueryParser('content', index.schema).parse(search_query)
+        results = searcher.search(query, limit=N_RESULTS)
+        return flask.render_template('search.html',
+                                     query=search_query,
+                                     results=results)
 
 def init_subtitle_search(seasons):
     # Create schema
     schema = Schema(season=ID, episode=ID, content=TEXT,
-                    season_slug=STORED, episode_slug=STORED, index=STORED)
+                    season_slug=STORED, episode_slug=STORED,
+                    index=STORED, timecode=STORED)
 
     # Create the index
-    index_path = Path(current_app.instance_path)/INDEX_DIR
+    index_path = Path(flask.current_app.instance_path)/INDEX_DIR
     if index_path.is_dir():
         rmtree(index_path)
     index_path.mkdir(exist_ok=True)
@@ -31,7 +57,8 @@ def init_subtitle_search(seasons):
                                     content=content,
                                     season_slug=season.slug,
                                     episode_slug=episode.slug,
-                                    index=i)
+                                    index=i,
+                                    timecode=str(subtitle.preview))
     writer.commit()
 
 def init_app(app):
