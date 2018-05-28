@@ -113,10 +113,10 @@ def read_library_command():
     library_data = load_library_file(Path(current_app.config['LIBRARY']))
     instance_path = Path(current_app.instance_path)
     save_pickle_file(library_data, instance_path / LIBRARY_PICKLE_FILE)
-    # Cache all episode and subtitle previews (takes a long time)
-    init_cache(library_data)
     # Index all subtitles for searching
     init_subtitle_search(library_data)
+    # Cache all episode and subtitle previews (takes a long time)
+    init_cache(library_data)
 
 def init_app(app):
     instance_path = Path(app.instance_path)
