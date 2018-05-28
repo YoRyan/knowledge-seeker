@@ -1,0 +1,43 @@
+import re
+import whoosh
+import whoosh.index
+from flask import current_app
+from pathlib import Path
+from shutil import rmtree
+from whoosh.fields import Schema, ID, TEXT, STORED
+
+INDEX_DIR = 'subtitle_index'
+
+def init_subtitle_search(seasons):
+    # Create schema
+    schema = Schema(season=ID, episode=ID, content=TEXT,
+                    season_slug=STORED, episode_slug=STORED, index=STORED)
+
+    # Create the index
+    index_path = Path(current_app.instance_path)/INDEX_DIR
+    if index_path.is_dir():
+        rmtree(index_path)
+    index_path.mkdir(exist_ok=True)
+    index = whoosh.index.create_in(index_path, schema)
+
+    # Populate the index
+    writer = index.writer()
+    for season in seasons:
+        for episode in season.episodes:
+            for i, subtitle in enumerate(episode.subtitles):
+                content = re.sub(r'</?[^>]+>', '', subtitle.content)
+                writer.add_document(season=season.name,
+                                    episode=episode.name,
+                                    content=content,
+                                    season_slug=season.slug,
+                                    episode_slug=episode.slug,
+                                    index=i)
+    writer.commit()
+
+def init_app(app):
+    index_path = Path(app.instance_path)/INDEX_DIR
+    try:
+        app.subtitle_index = whoosh.index.open_dir(index_path)
+    except whoosh.index.EmptyIndexError:
+        app.subtitle_index = None
+

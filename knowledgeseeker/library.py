@@ -9,7 +9,8 @@ from pathlib import Path
 from srt import parse as parse_srt
 
 from .utils import Timecode
-from .scache import populate_cache
+from .scache import init_cache
+from .searcher import init_subtitle_search
 from .video import FfprobeRuntimeError, video_duration
 
 LIBRARY_PICKLE_FILE = 'library_data.P'
@@ -114,6 +115,8 @@ def read_library_command():
     save_pickle_file(library_data, instance_path / LIBRARY_PICKLE_FILE)
     # Cache all episode and subtitle previews (takes a long time)
     init_cache(library_data)
+    # Index all subtitles for searching
+    init_subtitle_search(library_data)
 
 def init_app(app):
     instance_path = Path(app.instance_path)

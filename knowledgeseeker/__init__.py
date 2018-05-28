@@ -26,6 +26,9 @@ def create_app(test_config=None):
     from . import scache
     scache.init_app(app)
 
+    from . import searcher
+    searcher.init_app(app)
+
     init_app(app)
 
     return app
