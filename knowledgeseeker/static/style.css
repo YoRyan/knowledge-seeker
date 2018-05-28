@@ -52,21 +52,20 @@ a:hover, a:focus {
 nav {
         padding: 1rem;
         border-bottom: 0.1rem dotted grey;
+        font-size: 1.5rem;
 }
-nav > .leftside {
+nav .leftside {
         float: left;
-        font-size: 2rem;
 }
-nav > .rightside {
+nav .rightside {
         text-align: right;
-        font-size: 2rem;
 }
-nav > .rightside > a {
+nav .rightside a {
         text-decoration: none;
 }
-nav .season-icon {
+nav img {
         width: auto;
-        height: 2rem;
+        height: 3rem;
         vertical-align: middle;
 }
 

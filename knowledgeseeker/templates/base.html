@@ -14,7 +14,13 @@
 <nav>
         <h2 class="leftside">{% block header %}{% endblock %}</h2>
         <h1 class="rightside">
-                <a href="{{ url_for('explorer.browse_index') }}">Knowledge Seeker</a>
+                <a href="{{ url_for('explorer.browse_index') }}">
+                        Knowledge Seeker
+                        <img src="{{ url_for('static', filename='logo-small.png') }}"
+                             alt="logo"
+                             width="209"
+                             height="167">
+                </a>
         </h1>
 </nav>
 {% block content %}{% endblock %}
