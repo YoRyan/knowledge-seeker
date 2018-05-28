@@ -20,8 +20,11 @@ class StaticCache(object):
 
     def serve(self, endpoint, **values):
         item_path = self._item_path(endpoint, **values)
-        matched = [child for child in item_path.parent.iterdir()
-                   if child.is_file() and child.stem == item_path.name]
+        if item_path.parent.is_dir():
+            matched = [child for child in item_path.parent.iterdir()
+                       if child.is_file() and child.stem == item_path.name]
+        else:
+            matched = []
         if len(matched) == 0:
             return None
 
