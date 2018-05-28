@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Knowledge Seeker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/style.css">
+<style type="text/css">
+body {
+        padding: 2rem 0;
+        text-align: center;
+}
+h1,
+.help {
+        color: #2a2a2a;
+}
+
+h1 {
+        font-size: 4rem;
+}
+.subtitle {
+        margin: 2rem 0;
+}
+
+form {
+        width: 20rem;
+        text-align: left;
+        margin: 0 auto;
+}
+form input {
+        width: calc(100% - 2.5rem);
+}
+form button {
+        width: 2rem;
+        margin-left: 0.5rem;
+}
+form .help {
+        margin-top: 0.5rem;
+        font-size: 90%;
+}
+</style>
+</head>
+
+<body>
+<h1>Knowledge Seeker</h1>
+
+<p class="subtitle">an <em>Avatar: The Last Airbender</em> search engine</p>
+
+<form action="/search" method="get">
+        <input name="q"></input><button type="submit">Go</button>
+        <p class="help">(try: "my honor")</p>
+</form>
+
+</body>
+</html>

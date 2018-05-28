@@ -9,7 +9,7 @@ bp = flask.Blueprint('explorer', __name__)
 
 @bp.route('/')
 def browse_index():
-    return flask.render_template('index.html', seasons=flask.current_app.library_data)
+    return flask.current_app.send_static_file('index.html')
 
 @bp.route('/<season>/')
 @match_season

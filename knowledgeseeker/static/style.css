@@ -53,7 +53,7 @@ nav {
         padding: 1rem;
         border-bottom: 0.1rem dotted grey;
 }
-nav > h1 {
+nav > .leftside {
         float: left;
         font-size: 2rem;
 }

@@ -21,10 +21,13 @@ def do_search():
     if index is None:
         flask.abort(501, 'search not available')
 
-    search_query = flask.request.query_string.decode(QUERY_STRING_ENCODING)
+    search_query = flask.request.args.get('q')
+    if search_query is None:
+        return flask.redirect(flask.url_for('explorer.browse_index'))
+
     search_query = re.sub(r'[^a-zA-Z0-9% ]', '', search_query)
     search_query = search_query[0:QUERY_STRING_MAX_LENGTH]
-    search_query = unquote(search_query, encoding=QUERY_STRING_ENCODING)
+    search_query = unquote(search_query)
 
     with index.searcher() as searcher:
         query = QueryParser('content', index.schema).parse(search_query)
