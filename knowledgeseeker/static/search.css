@@ -4,10 +4,10 @@ form {
         margin: 1rem auto 0 auto;
 }
 form input {
-        width: calc(100% - 3.5rem);
+        width: calc(100% - 7.5rem);
 }
 form button {
-        width: 3rem;
+        width: 7rem;
         margin-left: 0.5rem;
 }
 
