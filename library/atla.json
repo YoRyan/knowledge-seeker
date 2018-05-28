@@ -1,6 +1,7 @@
 [
 { "seasonSlug": "atla_b1",
   "seasonName": "Book One: Water",
+  "seasonIcon": "icons/water.png",
   "episodes": [
         { "episodeSlug": "e1",
           "episodeName": "The Boy in the Iceberg",
