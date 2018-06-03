@@ -4,6 +4,7 @@
         --webm-color: #009a12;
         --split-color: #a400ff;
         --sans-font: sans-serif;
+        --grey-color: #2a2a2a;
 }
 * {
         margin: 0;
@@ -20,7 +21,7 @@ body > section {
 }
 
 a:visited, a:link {
-        color: #2a2a2a;
+        color: var(--grey-color);
 }
 a:hover, a:focus {
         color: black;

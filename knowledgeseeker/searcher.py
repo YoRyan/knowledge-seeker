@@ -34,6 +34,7 @@ def do_search():
         results = searcher.search(query, limit=N_RESULTS)
         return flask.render_template('search.html',
                                      query=search_query,
+                                     n_results=len(results),
                                      results=results)
 
 def init_subtitle_search(seasons):
