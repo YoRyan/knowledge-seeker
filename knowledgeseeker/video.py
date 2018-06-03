@@ -4,9 +4,6 @@ from flask import current_app
 
 from .utils import Timecode
 
-FFMPEG_PATH = 'ffmpeg'
-FFPROBE_PATH = 'ffprobe'
-
 class FfmpegRuntimeError(Exception):
     pass
 
@@ -138,7 +135,7 @@ def video_duration(video_path):
     # https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
     args = ['-v', 'error', '-show_entries', 'format=duration', '-of',
             'default=noprint_wrappers=1:nokey=1', '-sexagesimal', str(video_path)]
-    process = subprocess.run([FFPROBE_PATH] + args,
+    process = subprocess.run([current_app.config['FFPROBE_PATH']] + args,
                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     if process.returncode == 0:
         duration = process.stdout.decode('ascii').strip()
@@ -175,11 +172,11 @@ def ffmpeg_run_stdout(stream, stdin=None):
             .replace('\\\\\\\\\\\\', '\\\\\\')
             for a in args]
     if not current_app.config['DEV']:
-        process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
+        process = subprocess.run([current_app.config['FFMPEG_PATH']] + args, input=stdin,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     else:
         print('Running ffmpeg with args: %s\n' % ' '.join(args))
-        process = subprocess.run([FFMPEG_PATH] + args, input=stdin,
+        process = subprocess.run([current_app.config['FFMPEG_PATH']] + args, input=stdin,
                                  stdout=subprocess.PIPE)
     if process.returncode == 0:
         return process.stdout

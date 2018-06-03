@@ -10,3 +10,6 @@ MAX_WEBM_LENGTH = timedelta(seconds=15)
 GIF_VRES = 360
 WEBM_VRES = 480
 HTTP_CACHE_EXPIRES = timedelta(days=7)
+
+FFMPEG_PATH = 'ffmpeg'
+FFPROBE_PATH = 'ffprobe'
