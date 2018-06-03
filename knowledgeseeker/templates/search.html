@@ -20,7 +20,8 @@
 {% for result in results %}
 {% set episode_kwargs = { 'season': result['season_slug'], 'episode': result['episode_slug'] } %}
         <a class="result"
-           href="{{ url_for('explorer.browse_moment', timecode=result['timecode'], **episode_kwargs) }}">
+           href="{{ url_for('explorer.browse_moment', timecode=result['timecode'], **episode_kwargs) }}"
+           title="{{ result['content'] }}">
                 <img src="{{ url_for('clipper.snapshot_tiny', timecode=result['timecode'], **episode_kwargs) }}"
                      alt="">
         </a>

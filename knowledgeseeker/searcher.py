@@ -38,7 +38,7 @@ def do_search():
 
 def init_subtitle_search(seasons):
     # Create schema
-    schema = Schema(season=ID, episode=ID, content=TEXT,
+    schema = Schema(season=ID, episode=ID, content=TEXT(stored=True),
                     season_slug=STORED, episode_slug=STORED,
                     index=STORED, timecode=STORED)
 
