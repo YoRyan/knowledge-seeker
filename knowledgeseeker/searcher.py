@@ -11,7 +11,7 @@ from whoosh.qparser import QueryParser
 INDEX_DIR = 'subtitle_index'
 QUERY_STRING_ENCODING = 'ascii'
 QUERY_STRING_MAX_LENGTH = 80
-N_RESULTS = 30
+N_RESULTS = 50
 
 bp = flask.Blueprint('searcher', __name__)
 
@@ -26,7 +26,7 @@ def do_search():
         search_query = ''
 
     search_query = unquote(search_query)
-    search_query = re.sub(r'[^a-zA-Z0-9 ]', '', search_query)
+    search_query = re.sub(r'[^a-zA-Z0-9 \']', '', search_query)
     search_query = search_query[0:QUERY_STRING_MAX_LENGTH]
 
     with index.searcher() as searcher:
