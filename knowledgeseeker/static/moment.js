@@ -11,7 +11,8 @@ Moment = {
 
         text: {
                 processing: "processing (this can take awhile)",
-                permalink: "Permalink"
+                permalink: "Permalink:",
+                download: "Download"
         }
 };
 
@@ -86,11 +87,14 @@ Moment.displayMedia = function(blob) {
         Moment.displayScreen.empty();
         var image, imageWrap,
             video, videoWrap;
+        /* Refer to the original URL (so context menu controls still work) and
+         * hope the browser cached it */
         switch (blob.type) {
         case "image/jpeg":
         case "image/gif":
                 image = $("<img>");
-                image.attr("src", URL.createObjectURL(blob));
+                image.attr({ "src": Moment.currentUrl,
+                             "alt": "" });
 
                 imageWrap = $("<div>");
                 imageWrap.attr("class", "media-dialog-image");
@@ -99,7 +103,7 @@ Moment.displayMedia = function(blob) {
                 break;
         case "video/webm":
                 video = $("<video>");
-                video.attr({ src: URL.createObjectURL(blob),
+                video.attr({ src: Moment.currentUrl,
                              controls: true,
                              loop: true });
 
@@ -112,13 +116,42 @@ Moment.displayMedia = function(blob) {
                 break;
         }
 
-        var permalink = $("<input>");
-        permalink.attr({ value: Moment.currentUrl,
-                         readonly: true });
-        var permalinkWrap = $("<span>");
-        permalinkWrap.text(Moment.text.permalink + " ");
-        permalinkWrap.append(permalink);
-        Moment.displayScreen.append(permalinkWrap);
+        var permalinkLabel = $("<span>");
+        permalinkLabel.attr("class", "media-permalink-label");
+        permalinkLabel.text(Moment.text.permalink);
+
+        var permalinkField = $("<input>");
+        permalinkField.attr({ value: Moment.currentUrl,
+                              "class": "media-permalink-field",
+                              readonly: true });
+        permalinkField.click(function(e) { this.select(); });
+
+        var download = $("<a>");
+        var filename;
+        switch (blob.type) {
+        case "image/jpeg":
+                filename = "snapshot.jpg";
+                break;
+        case "image/gif":
+                filename = "animation.gif";
+                break;
+        case "video/webm":
+                filename = "animation.webm";
+                break;
+        default:
+                break;
+        }
+        download.attr({ href: Moment.currentUrl,
+                        "class": "media-download",
+                        download: filename });
+        download.text(Moment.text.download);
+
+        var controls = $("<div>");
+        controls.attr("class", "media-controls");
+        controls.append(permalinkLabel);
+        controls.append(permalinkField);
+        controls.append(download);
+        Moment.displayScreen.append(controls);
 };
 
 Moment.dismissMedia = function() {

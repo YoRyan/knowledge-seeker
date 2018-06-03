@@ -172,3 +172,20 @@
         opacity: 0.4;
         cursor: pointer;
 }
+.media-controls {
+        margin-top: 0.5rem;
+}
+.media-permalink-label,
+.media-permalink-field,
+.media-download {
+        display: inline-block;
+}
+.media-permalink-label {
+        width: calc(5rem);
+}
+.media-permalink-field {
+        width: calc(100% - 13rem);
+}
+.media-download {
+        width: calc(8rem);
+}
