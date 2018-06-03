@@ -1,4 +1,4 @@
-from flask import Flask
+import flask
 from flask_caching import Cache
 from os import environ, makedirs
 from pathlib import Path
@@ -7,7 +7,7 @@ cache = Cache(config={ 'CACHE_TYPE': 'simple',
                        'CACHE_THRESHOLD': 200 }) # 200*5 MB = 1 GB
 
 def create_app(test_config=None):
-    app = Flask(__name__, instance_relative_config=True)
+    app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_object('config')
     app.config['DEV'] = 'FLASK_ENV' in environ and environ['FLASK_ENV'] == 'development'
 
@@ -36,4 +36,12 @@ def create_app(test_config=None):
 
 def init_app(app):
     cache.init_app(app)
+
+    @app.route('/')
+    def index():
+        return flask.current_app.send_static_file('index.html')
+
+    @app.route('/about')
+    def about():
+        return flask.render_template('about.html')
 

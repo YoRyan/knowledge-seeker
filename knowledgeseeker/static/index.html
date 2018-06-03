@@ -5,10 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/static/style.css">
 <style type="text/css">
+html, body {
+        height: 100%;
+}
 body {
-        padding: 2rem 0;
         text-align: center;
 }
+.content-wrap {
+        min-height: 100%;
+        position: relative;
+        padding: 2rem 0 1rem 0;
+}
+
 h1,
 .help {
         color: #2a2a2a;
@@ -37,12 +45,20 @@ form .help {
         margin-top: 0.5rem;
         font-size: 90%;
 }
+
+#meta {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        margin: 1rem;
+        height: 1rem;
+}
 </style>
 </head>
 
 <body>
+<div class="content-wrap">
 <h1>Knowledge Seeker</h1>
-
 <p class="subtitle">an <em>Avatar: The Last Airbender</em> search engine</p>
 
 <p>
@@ -54,5 +70,9 @@ form .help {
         <p class="help">(try: "my honor")</p>
 </form>
 
+<p id="meta">
+        <a href="/about">about me</a>
+</p>
+</div>
 </body>
 </html>

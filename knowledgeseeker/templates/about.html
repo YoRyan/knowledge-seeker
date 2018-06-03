@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='about.css') }}">
+{% endblock %}
+
+{% block title %}About{% endblock %}
+
+{% block header %}FAQ{% endblock %}
+
+{% block content %}
+<section>
+        <h3>How does this work?</h3>
+        <p>Episodes were sourced from the Avatar DVD's, and the closed captioning
+        were used to index the dialogue. As such, Knowledge Seeker is only aware
+        of what words were said on screen, not individual characters or specific
+        concepts. If you want something that understands that, you're probably
+        looking for <a href="http://avatar.wikia.com">Avatar Wiki</a>.</p>
+
+        <h3>Can I see the internals?</h3>
+        <p>Yes. This web app is powered by <del>magic</del>
+        <del>pixelbending</del> Python, Flask, and ffmpeg. Source code is available
+        on <a href="https://github.com/YoRyan/knowledge-seeker">Github</a>.</p>
+</section>
+{% endblock %}

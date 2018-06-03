@@ -7,10 +7,6 @@ from .utils import (Timecode, match_season, match_season_episode,
 
 bp = flask.Blueprint('explorer', __name__)
 
-@bp.route('/')
-def browse_index():
-    return flask.current_app.send_static_file('index.html')
-
 @bp.route('/<season>/')
 @match_season
 def browse_season(season):
