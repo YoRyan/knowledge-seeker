@@ -4,13 +4,14 @@
 <title>{% block title %}{% endblock %} - Knowledge Seeker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 {% block head %}{% endblock %}
 {% macro jquery() -%}
 <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 {%- endmacro %}
 </head>
 
-<body>
+<body>{% block body %}
 <nav>
         <h2 class="leftside">{% block header %}{% endblock %}</h2>
         <h1 class="rightside">
@@ -24,5 +25,5 @@
         </h1>
 </nav>
 {% block content %}{% endblock %}
-</body>
+{% endblock %}</body>
 </html>

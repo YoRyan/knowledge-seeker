@@ -1,0 +1,48 @@
+html, body {
+        height: 100%;
+}
+body {
+        text-align: center;
+}
+.content-wrap {
+        min-height: 100%;
+        position: relative;
+        padding: 2rem 0 1rem 0;
+}
+
+h1,
+.help {
+        color: #2a2a2a;
+}
+
+h1 {
+        font-size: 4rem;
+}
+.subtitle {
+        margin: 2rem 0;
+}
+
+form {
+        width: 35rem;
+        text-align: left;
+        margin: 4rem auto;
+}
+form input {
+        width: calc(100% - 7.5rem);
+}
+form button {
+        width: 7rem;
+        margin-left: 0.5rem;
+}
+form .help {
+        margin-top: 0.5rem;
+        font-size: 90%;
+}
+
+#meta {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        margin: 1rem;
+        height: 1rem;
+}

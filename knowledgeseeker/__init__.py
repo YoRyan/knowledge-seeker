@@ -39,7 +39,7 @@ def init_app(app):
 
     @app.route('/')
     def index():
-        return flask.current_app.send_static_file('index.html')
+        return flask.render_template('index.html')
 
     @app.route('/about')
     def about():

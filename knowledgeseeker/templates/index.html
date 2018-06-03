@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+{% endblock %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+<div class="content-wrap">
+<h1>Knowledge Seeker</h1>
+<p class="subtitle">an <em>Avatar: The Last Airbender</em> search engine</p>
+
+<p>
+        <img src="/static/logo-large.png" width="280" height="226" alt="logo">
+</p>
+
+<form action="/search" method="get">
+        <input name="q" autofocus><button type="submit">Search Library</button>
+        <p class="help">(try: "my honor")</p>
+</form>
+
+<p id="meta">
+        <a href="/about">about me</a>
+</p>
+</div>
+{% endblock %}
