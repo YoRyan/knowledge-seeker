@@ -17,7 +17,8 @@
 </form>
 
 <section>
-{% if n_results == 0 %}
+{% if query == "" %}
+{% elif n_results == 0 %}
         <p class="no-results">No results found for "{{ query }}".</p>
 {% else %}
         {% for result in results %}

@@ -23,7 +23,7 @@ def do_search():
 
     search_query = flask.request.args.get('q')
     if search_query is None:
-        return flask.redirect(flask.url_for('explorer.browse_index'))
+        search_query = ''
 
     search_query = unquote(search_query)
     search_query = re.sub(r'[^a-zA-Z0-9 ]', '', search_query)
