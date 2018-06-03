@@ -53,7 +53,7 @@ a:hover, a:focus {
 nav {
         padding: 1rem;
         border-bottom: 0.1rem dotted grey;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
 }
 nav .leftside {
         float: left;
@@ -66,7 +66,7 @@ nav .rightside a {
 }
 nav img {
         width: auto;
-        height: 3rem;
+        height: 1.7rem;
         vertical-align: middle;
 }
 
