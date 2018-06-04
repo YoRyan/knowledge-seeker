@@ -1,10 +1,11 @@
 :root {
-        --jpeg-color: #0072ff;
-        --gif-color: #cf0000;
-        --webm-color: #009a12;
-        --split-color: #a400ff;
-        --sans-font: sans-serif;
+        --red-color: #cb1c1c;
         --grey-color: #2a2a2a;
+        --jpeg-color: var(--red-color);
+        --gif-color: var(--red-color);
+        --webm-color: var(--red-color);
+        --split-color: var(--grey-color);
+        --sans-font: sans-serif;
 }
 * {
         margin: 0;
@@ -72,13 +73,13 @@ nav img {
 
 /* fancy buttons */
 .media-link {
-        text-transform: uppercase;
+        text-transform: lowercase;
         text-decoration: none;
         display: inline-block;
         padding: 0.4rem;
         border-radius: 0.5rem;
         border: 0.1rem solid;
-        font-family: var(--sans-font);
+        font-family: var(--serif-font);
 }
 .media-link.disabled {
         border-color: grey;
