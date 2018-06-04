@@ -5,7 +5,6 @@ from os import makedirs, remove
 from pathlib import Path
 from shutil import rmtree
 
-# NOTE: methods are not yet thread-safe
 class StaticCache(object):
     def __init__(self, path):
         self.path = path

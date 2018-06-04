@@ -71,7 +71,7 @@ def read_season_json(season_data, relative_to_path=Path('.')):
 
     icon = season_data.get('seasonIcon', None)
     if icon is not None:
-        icon = relative_to_path / Path(icon)
+        icon = relative_to_path/Path(icon)
 
     episodes = season_data.get('episodes', [])
     if episodes != []:
@@ -82,12 +82,12 @@ def read_season_json(season_data, relative_to_path=Path('.')):
 
 def read_episode_json(episode_data, relative_to_path=Path('.')):
     slug = episode_data['episodeSlug']
-    video = relative_to_path / Path(episode_data['videoFile'])
+    video = relative_to_path/Path(episode_data['videoFile'])
     name = episode_data.get('episodeName', None)
 
     subtitles_path = episode_data.get('subtitleFile', None)
     if subtitles_path is not None:
-        subtitles_path = relative_to_path / Path(subtitles_path)
+        subtitles_path = relative_to_path/Path(subtitles_path)
         with open(subtitles_path) as f:
             contents = f.read()
         subtitles = list(parse_srt(contents))
@@ -112,7 +112,7 @@ def read_library_command():
     # Probe library metadata
     library_data = load_library_file(Path(current_app.config['LIBRARY']))
     instance_path = Path(current_app.instance_path)
-    save_pickle_file(library_data, instance_path / LIBRARY_PICKLE_FILE)
+    save_pickle_file(library_data, instance_path/LIBRARY_PICKLE_FILE)
     # Index all subtitles for searching
     init_subtitle_search(library_data)
     # Cache all episode and subtitle previews (takes a long time)
@@ -122,7 +122,7 @@ def init_app(app):
     instance_path = Path(app.instance_path)
     # Load library metadata
     try:
-        app.library_data = load_pickle_file(instance_path / LIBRARY_PICKLE_FILE)
+        app.library_data = load_pickle_file(instance_path/LIBRARY_PICKLE_FILE)
     except FileNotFoundError:
         app.library_data = []
     app.cli.add_command(read_library_command)

@@ -8,7 +8,7 @@ from pathlib import Path
 from time import mktime
 from wsgiref.handlers import format_date_time
 
-from . import cache
+from . import animation_cache
 from .utils import (Timecode, match_season_episode, episode_has_subtitles,
                     parse_timecode, check_timecode_range, set_expires, static_cached)
 from .video import (make_snapshot, make_snapshot_with_subtitles, make_tiny_snapshot,
@@ -52,13 +52,13 @@ def snapshot_tiny(season, episode, timecode):
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
-@cache.cached(timeout=None)
 @match_season_episode
 @parse_timecode('start_timecode')
 @parse_timecode('end_timecode')
 @check_timecode_range('start_timecode', 'end_timecode',
                       lambda: flask.current_app.config['MAX_GIF_LENGTH'])
 @set_expires
+@animation_cache.cached()
 def gif(season, episode, start_timecode, end_timecode):
     data = make_gif(episode.video_path, start_timecode, end_timecode,
                     vres=flask.current_app.config['GIF_VRES'])
@@ -67,7 +67,6 @@ def gif(season, episode, start_timecode, end_timecode):
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
-@cache.cached(timeout=None)
 @match_season_episode
 @episode_has_subtitles
 @parse_timecode('start_timecode')
@@ -75,6 +74,7 @@ def gif(season, episode, start_timecode, end_timecode):
 @check_timecode_range('start_timecode', 'end_timecode',
                       lambda: flask.current_app.config['MAX_GIF_LENGTH'])
 @set_expires
+@animation_cache.cached()
 def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     data = call_with_fonts(make_gif_with_subtitles,
                            episode.video_path,
@@ -85,13 +85,13 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm')
-@cache.cached(timeout=None)
 @match_season_episode
 @parse_timecode('start_timecode')
 @parse_timecode('end_timecode')
 @check_timecode_range('start_timecode', 'end_timecode',
                       lambda: flask.current_app.config['MAX_WEBM_LENGTH'])
 @set_expires
+@animation_cache.cached()
 def webm(season, episode, start_timecode, end_timecode):
     data = make_webm(episode.video_path, start_timecode, end_timecode,
                      vres=flask.current_app.config['WEBM_VRES'])
@@ -100,7 +100,6 @@ def webm(season, episode, start_timecode, end_timecode):
     return response
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm/sub')
-@cache.cached(timeout=None)
 @match_season_episode
 @episode_has_subtitles
 @parse_timecode('start_timecode')
@@ -108,6 +107,7 @@ def webm(season, episode, start_timecode, end_timecode):
 @check_timecode_range('start_timecode', 'end_timecode',
                       lambda: flask.current_app.config['MAX_WEBM_LENGTH'])
 @set_expires
+@animation_cache.cached()
 def webm_with_subtitles(season, episode, start_timecode, end_timecode):
     data = call_with_fonts(make_webm_with_subtitles,
                            episode.video_path,

@@ -3,8 +3,9 @@ from flask_caching import Cache
 from os import environ, makedirs
 from pathlib import Path
 
-cache = Cache(config={ 'CACHE_TYPE': 'simple',
-                       'CACHE_THRESHOLD': 200 }) # 200*5 MB = 1 GB
+animation_cache = Cache(config={ 'CACHE_TYPE': 'filesystem',
+                                 'CACHE_DEFAULT_TIMEOUT': 0,
+                                 'CACHE_THRESHOLD': 400 }) # 400*5 MB = 2 GB
 
 def create_app(test_config=None):
     app = flask.Flask(__name__, instance_relative_config=True)
@@ -35,7 +36,8 @@ def create_app(test_config=None):
     return app
 
 def init_app(app):
-    cache.init_app(app)
+    animation_cache_path = Path(app.instance_path)/'animation_cache'
+    animation_cache.init_app(app, config={ 'CACHE_DIR': animation_cache_path })
 
     @app.route('/')
     def index():
