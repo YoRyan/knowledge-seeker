@@ -55,6 +55,7 @@ nav {
         padding: 1rem;
         border-bottom: 0.1rem dotted grey;
         font-size: 1.3rem;
+        background-color: #f6f6f6;
 }
 nav .leftside {
         float: left;
