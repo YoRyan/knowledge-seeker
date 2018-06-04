@@ -53,7 +53,7 @@ class StaticCache(object):
         sub = url_for(endpoint, _external=False, **values).lstrip('/')
         return self.path/sub
 
-def init_cache(seasons):
+def init_static_cache(seasons):
     def cache(season, episode, timecode):
         current_app.static_cache.cache('clipper.snapshot_tiny', season=season.slug,
                                        episode=episode.slug, timecode=str(timecode))
@@ -70,6 +70,6 @@ def init_cache(seasons):
                     cache(season, episode, subtitle.preview)
 
 def init_app(app):
-    cache_path = Path(app.config['CACHE'])
+    cache_path = Path(app.config['STATIC_CACHE'])
     app.static_cache = StaticCache(cache_path)
 

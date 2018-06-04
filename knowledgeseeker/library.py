@@ -9,7 +9,7 @@ from pathlib import Path
 from srt import parse as parse_srt
 
 from .utils import Timecode
-from .scache import init_cache
+from .scache import init_static_cache
 from .searcher import init_subtitle_search
 from .video import FfprobeRuntimeError, video_duration
 
@@ -116,7 +116,7 @@ def read_library_command():
     # Index all subtitles for searching
     init_subtitle_search(library_data)
     # Cache all episode and subtitle previews (takes a long time)
-    init_cache(library_data)
+    init_static_cache(library_data)
 
 def init_app(app):
     instance_path = Path(app.instance_path)
