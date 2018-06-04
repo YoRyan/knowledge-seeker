@@ -5,6 +5,8 @@ from os import makedirs, remove
 from pathlib import Path
 from shutil import rmtree
 
+CACHE_DIR = 'static_cache'
+
 class StaticCache(object):
     def __init__(self, path):
         self.path = path
@@ -70,6 +72,6 @@ def init_static_cache(seasons):
                     cache(season, episode, subtitle.preview)
 
 def init_app(app):
-    cache_path = Path(app.config['STATIC_CACHE'])
+    cache_path = Path(app.instance_path)/CACHE_DIR
     app.static_cache = StaticCache(cache_path)
 
