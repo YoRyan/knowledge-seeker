@@ -23,7 +23,8 @@ h1 {
 }
 
 form {
-        width: 35rem;
+        width: 95%;
+        max-width: 35rem;
         text-align: left;
         margin: 4rem auto;
 }
