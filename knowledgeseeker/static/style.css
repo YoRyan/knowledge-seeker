@@ -5,6 +5,7 @@
         --gif-color: var(--red-color);
         --webm-color: var(--red-color);
         --split-color: var(--grey-color);
+        --serif-font: 'Crimson Text', serif;
         --sans-font: sans-serif;
 }
 * {
@@ -13,8 +14,9 @@
         box-sizing: border-box;
 }
 body {
-        color: black;
+        color: #232323;
         background-color: white;
+        font-family: var(--serif-font);
 }
 
 body > section {
@@ -80,7 +82,6 @@ nav img {
         padding: 0.4rem;
         border-radius: 0.5rem;
         border: 0.1rem solid;
-        font-family: var(--serif-font);
 }
 .media-link.disabled {
         border-color: grey;
