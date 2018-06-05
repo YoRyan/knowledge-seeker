@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<title>{% block title %}{% endblock %} - Knowledge Seeker</title>
+<title>{% block wholetitle %}{% block title %}{% endblock %} - Knowledge Seeker{% endblock %}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Crimson+Text:400,400i,600">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
