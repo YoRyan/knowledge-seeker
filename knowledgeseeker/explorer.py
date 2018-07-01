@@ -123,12 +123,12 @@ def surrounding_subtitles(episode, timecode):
     return surrounding
 
 def current_line(episode, timecode):
-    intersecting = [subtitle for subtitle in episode.subtitles
-                    if subtitle.start <= timecode and subtitle.end >= timecode]
-    if len(intersecting) > 0:
-        return re.sub(r'</?[^>]+>', '', intersecting[0].content).strip()
-    else:
+    intersecting = next((subtitle for subtitle in episode.subtitles
+                         if subtitle.start <= timecode and subtitle.end >= timecode), None)
+    if intersecting is None:
         return None
+    else:
+        return re.sub(r'</?[^>]+>', '', intersecting.content).strip()
 
 def step_times(episode, timecode):
     TIME_STEPS = [timedelta(seconds=0.1),

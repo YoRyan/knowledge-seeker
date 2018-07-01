@@ -22,14 +22,13 @@ class StaticCache(object):
     def serve(self, endpoint, **values):
         item_path = self._item_path(endpoint, **values)
         if item_path.parent.is_dir():
-            matched = [child for child in item_path.parent.iterdir()
-                       if child.is_file() and child.stem == item_path.name]
+            item_path = next((child for child in item_path.parent.iterdir()
+                              if child.is_file() and child.stem == item_path.name), None)
         else:
-            matched = []
-        if len(matched) == 0:
+            item_path = None
+        if item_path is None:
             return None
 
-        item_path = matched[0]
         with open(item_path, 'rb') as f:
             data = f.read()
         mimetype = guess_type(item_path.name)[0]

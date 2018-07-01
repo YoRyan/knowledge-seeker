@@ -57,12 +57,11 @@ class Timecode(timedelta):
 def match_season(f):
     @wraps(f)
     def decorator(**kwargs):
-        season_slug = kwargs['season']
-        seasons = [season for season in flask.current_app.library_data
-                   if season.slug == season_slug]
-        if len(seasons) == 0:
-            flask.abort(404, 'season \'%s\' not found' % season_slug)
-        season = seasons[0]
+        slug = kwargs['season']
+        season = next((season for season in flask.current_app.library_data
+                       if season.slug == slug), None)
+        if season is None:
+            flask.abort(404, 'season \'%s\' not found' % slug)
         kwargs.pop('season')
         return f(season=season, **kwargs)
     return decorator
@@ -73,11 +72,10 @@ def match_season_episode(f):
     def decorator(**kwargs):
         season = kwargs['season']
         episode_slug = kwargs['episode']
-        episodes = [episode for episode in season.episodes
-                    if episode.slug == episode_slug]
-        if len(episodes) == 0:
+        episode = next((episode for episode in season.episodes
+                        if episode.slug == episode_slug), None)
+        if episode is None:
             flask.abort(404, 'episode \'%s\' not found' % episode_slug)
-        episode = episodes[0]
         kwargs.pop('episode')
         return f(episode=episode, **kwargs)
     return decorator
