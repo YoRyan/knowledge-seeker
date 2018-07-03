@@ -23,9 +23,7 @@ bp = flask.Blueprint('clipper', __name__)
 @set_expires
 def snapshot(season, episode, timecode):
     data = make_snapshot(episode.video_path, timecode)
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'image/jpeg')
-    return response
+    return flask.Response(data, mimetype='image/jpeg')
 
 @bp.route('/<season>/<episode>/<timecode>/pic/sub')
 @match_season_episode
@@ -36,9 +34,7 @@ def snapshot_with_subtitles(season, episode, timecode):
     data = call_with_fonts(make_snapshot_with_subtitles,
                            episode.video_path,
                            episode.subtitles_path, timecode)
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'image/jpeg')
-    return response
+    return flask.Response(data, mimetype='image/jpeg')
 
 @bp.route('/<season>/<episode>/<timecode>/pic/tiny')
 @static_cached
@@ -47,9 +43,7 @@ def snapshot_with_subtitles(season, episode, timecode):
 @set_expires
 def snapshot_tiny(season, episode, timecode):
     data = make_tiny_snapshot(episode.video_path, timecode)
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'image/jpeg')
-    return response
+    return flask.Response(data, mimetype='image/jpeg')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
 @match_season_episode
@@ -62,9 +56,7 @@ def snapshot_tiny(season, episode, timecode):
 def gif(season, episode, start_timecode, end_timecode):
     data = make_gif(episode.video_path, start_timecode, end_timecode,
                     vres=flask.current_app.config['GIF_VRES'])
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'image/gif')
-    return response
+    return flask.Response(data, mimetype='image/gif')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif/sub')
 @match_season_episode
@@ -80,9 +72,7 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
                            episode.video_path,
                            episode.subtitles_path, start_timecode, end_timecode,
                            vres=flask.current_app.config['GIF_VRES'])
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'image/gif')
-    return response
+    return flask.Response(data, mimetype='image/gif')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm')
 @match_season_episode
@@ -95,9 +85,7 @@ def gif_with_subtitles(season, episode, start_timecode, end_timecode):
 def webm(season, episode, start_timecode, end_timecode):
     data = make_webm(episode.video_path, start_timecode, end_timecode,
                      vres=flask.current_app.config['WEBM_VRES'])
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'video/webm')
-    return response
+    return flask.Response(data, mimetype='video/webm')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/webm/sub')
 @match_season_episode
@@ -113,9 +101,7 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
                            episode.video_path,
                            episode.subtitles_path, start_timecode, end_timecode,
                            vres=flask.current_app.config['WEBM_VRES'])
-    response = flask.make_response(data)
-    response.headers.set('Content-Type', 'video/webm')
-    return response
+    return flask.Response(data, mimetype='video/webm')
 
 def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config

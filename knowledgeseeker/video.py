@@ -64,8 +64,7 @@ def make_gif(video_path, start_time, end_time, vres=360):
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
                             t=duration.total_seconds())
-    gif_image = ffmpeg_run_stdout(gstream)
-    return gif_image
+    return ffmpeg_run_stdout(gstream)
 
 def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
                             vres=360, fonts_path=None, font=None):
@@ -93,8 +92,7 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
                             t=duration.total_seconds())
-    gif_image = ffmpeg_run_stdout(gstream)
-    return gif_image
+    return ffmpeg_run_stdout(gstream)
 
 def make_webm(video_path, start_time, end_time, vres=360):
     duration = end_time - start_time
@@ -164,7 +162,7 @@ def ffmpeg_paletteuse_filter(video_stream, palette_stream, **kwargs):
                                    max_inputs=2, kwargs=kwargs)
     return node.stream()
 
-def ffmpeg_run_stdout(stream, stdin=None):
+def ffmpeg_run_stdout(stream):
     args = stream.get_args()
     # NOTE: nasty workaround for bad escaping by ffmpeg-python
     args = [str(a)
@@ -172,14 +170,11 @@ def ffmpeg_run_stdout(stream, stdin=None):
             .replace('\\\\\\\\\\\\', '\\\\\\')
             for a in args]
     if not current_app.config['DEV']:
-        process = subprocess.run([current_app.config['FFMPEG_PATH']] + args, input=stdin,
-                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen([current_app.config['FFMPEG_PATH']] + args,
+                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     else:
         print('Running ffmpeg with args: %s\n' % ' '.join(args))
-        process = subprocess.run([current_app.config['FFMPEG_PATH']] + args, input=stdin,
-                                 stdout=subprocess.PIPE)
-    if process.returncode == 0:
-        return process.stdout
-    else:
-        raise FfmpegRuntimeError
+        process = subprocess.Popen([current_app.config['FFMPEG_PATH']] + args,
+                                   stdout=subprocess.PIPE)
+    return process.stdout
 
