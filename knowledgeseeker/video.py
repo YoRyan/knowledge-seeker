@@ -17,7 +17,8 @@ def make_snapshot(video_path, time):
               .output('pipe:1',
                       format='singlejpeg',
                       vframes=1,
-                      q=1))
+                      q=1,
+                      threads=1))
     return ffmpeg_run_stdout(stream)
 
 def make_snapshot_with_subtitles(video_path, subtitle_path, time,
@@ -29,7 +30,8 @@ def make_snapshot_with_subtitles(video_path, subtitle_path, time,
     stream = ffmpeg.output(stream, 'pipe:1',
                            format='singlejpeg',
                            vframes=1,
-                           q=1)
+                           q=1,
+                           threads=1)
     return ffmpeg_run_stdout(stream)
 
 def make_tiny_snapshot(video_path, time, vres=100):
@@ -40,7 +42,8 @@ def make_tiny_snapshot(video_path, time, vres=100):
               .output('pipe:1',
                       format='singlejpeg',
                       vframes=1,
-                      q=5))
+                      q=5,
+                      threads=1))
     return ffmpeg_run_stdout(stream)
 
 def make_gif(video_path, start_time, end_time, vres=360):
@@ -63,7 +66,8 @@ def make_gif(video_path, start_time, end_time, vres=360):
                                        diff_mode='rectangle')
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
-                            t=duration.total_seconds())
+                            t=duration.total_seconds(),
+                            threads=1)
     return ffmpeg_run_stdout(gstream)
 
 def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
@@ -91,7 +95,8 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_time, end_time,
                                        diff_mode='rectangle')
     gstream = ffmpeg.output(gstream, 'pipe:1',
                             format='gif',
-                            t=duration.total_seconds())
+                            t=duration.total_seconds(),
+                            threads=1)
     return ffmpeg_run_stdout(gstream)
 
 def make_webm(video_path, start_time, end_time, vres=360):
@@ -107,7 +112,8 @@ def make_webm(video_path, start_time, end_time, vres=360):
                                'c:v': 'libvpx-vp9',
                                'crf': 35,
                                'b:v': '1000k',
-                               'cpu-used': 2 })
+                               'cpu-used': 2,
+                               'threads': 1 })
     return ffmpeg_run_stdout(stream)
 
 def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
@@ -126,7 +132,8 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
                                'c:v': 'libvpx-vp9',
                                'crf': 35,
                                'b:v': '1000k',
-                               'cpu-used': 2 })
+                               'cpu-used': 2,
+                               'threads': 1 })
     return ffmpeg_run_stdout(stream)
 
 def video_duration(video_path):
@@ -169,11 +176,10 @@ def ffmpeg_run_stdout(stream):
             .replace('\\\\\\\\\\\\', '\\\\\\')
             for a in stream.get_args()]
     args = [current_app.config['FFMPEG_PATH']] + args
-    args += ['-threads', '1']
     if not current_app.config['DEV']:
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     else:
-        print('Running: %s\n' % ' '.join(args))
+        print('\nRunning: %s\n' % ' '.join(args))
         process = subprocess.Popen(args, stdout=subprocess.PIPE)
     return process.stdout
 
