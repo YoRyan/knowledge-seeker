@@ -163,18 +163,17 @@ def ffmpeg_paletteuse_filter(video_stream, palette_stream, **kwargs):
     return node.stream()
 
 def ffmpeg_run_stdout(stream):
-    args = stream.get_args()
     # NOTE: nasty workaround for bad escaping by ffmpeg-python
     args = [str(a)
             .replace('\\\\\\\\\\\\\\', '\\\\\\')
             .replace('\\\\\\\\\\\\', '\\\\\\')
-            for a in args]
+            for a in stream.get_args()]
+    args = [current_app.config['FFMPEG_PATH']] + args
+    args += ['-threads', '1']
     if not current_app.config['DEV']:
-        process = subprocess.Popen([current_app.config['FFMPEG_PATH']] + args,
-                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     else:
-        print('Running ffmpeg with args: %s\n' % ' '.join(args))
-        process = subprocess.Popen([current_app.config['FFMPEG_PATH']] + args,
-                                   stdout=subprocess.PIPE)
+        print('Running: %s\n' % ' '.join(args))
+        process = subprocess.Popen(args, stdout=subprocess.PIPE)
     return process.stdout
 
