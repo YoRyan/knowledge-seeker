@@ -113,6 +113,3 @@ def call_with_fonts(callee, *args, **kwargs):
             kwargs['font'] = app_config['SUBTITLES_FONT']
     return callee(*args, **kwargs)
 
-    date = datetime.now() + td
-    response.headers.set('Expires', format_date_time(mktime(date.timetuple())))
-
