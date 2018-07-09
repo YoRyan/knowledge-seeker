@@ -111,6 +111,7 @@ def save_pickle_file(library_data, path):
 def read_library_command():
     # Probe library metadata
     library_data = load_library_file(Path(current_app.config['LIBRARY']))
+    current_app.library_data = library_data
     instance_path = Path(current_app.instance_path)
     save_pickle_file(library_data, instance_path/LIBRARY_PICKLE_FILE)
     # Index all subtitles for searching
