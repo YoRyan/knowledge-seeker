@@ -41,7 +41,7 @@ class Timecode(timedelta):
             milliseconds = round(float(groups[2])*1000)
             return Timecode(hours=hours, minutes=minutes, milliseconds=milliseconds)
         else:
-            raise ValueError('invalid timecode format: \'%s\'' % tc)
+            raise ValueError('invalid timecode format: \'%s\'' % s)
     def str_seconds(self):
         s = self.total_seconds()
         hours = s // 60 // 60
