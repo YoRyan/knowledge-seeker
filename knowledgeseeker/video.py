@@ -38,7 +38,7 @@ def make_tiny_snapshot(video_path, time, vres=100):
     stream = (ffmpeg
               .input(video_path,
                      ss=time)
-              .filter_('scale', -1, vres)
+              .filter_('scale', -1, vres, flags='fast_bilinear')
               .output('pipe:1',
                       format='singlejpeg',
                       vframes=1,
