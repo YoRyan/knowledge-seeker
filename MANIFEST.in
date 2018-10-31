@@ -1,3 +1,4 @@
 graft knowledgeseeker/static
 graft knowledgeseeker/templates
+include knowledgeseeker/schema.sql
 global-exclude *.pyc

@@ -9,9 +9,9 @@ from pathlib import Path
 from srt import parse as parse_srt
 
 from .utils import Timecode
-from .scache import init_static_cache
 from .searcher import init_subtitle_search
 from .video import FfprobeRuntimeError, video_duration
+from knowledgeseeker.database import get_db
 
 LIBRARY_PICKLE_FILE = 'library_data.P'
 
@@ -116,8 +116,11 @@ def read_library_command():
     save_pickle_file(library_data, instance_path/LIBRARY_PICKLE_FILE)
     # Index all subtitles for searching
     init_subtitle_search(library_data)
-    # Cache all episode and subtitle previews (takes a long time)
-    init_static_cache(library_data)
+
+    db = get_db()
+    with current_app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
+    db.commit()
 
 def init_app(app):
     instance_path = Path(app.instance_path)

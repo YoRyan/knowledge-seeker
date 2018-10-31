@@ -2,6 +2,9 @@ import flask
 from os import environ, makedirs
 from pathlib import Path
 
+from knowledgeseeker.database import close_connection
+
+
 def create_app(test_config=None):
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile('config.py')
@@ -19,9 +22,6 @@ def create_app(test_config=None):
     from . import library
     library.init_app(app)
 
-    from . import scache
-    scache.init_app(app)
-
     from . import searcher
     app.register_blueprint(searcher.bp)
     searcher.init_app(app)
@@ -38,4 +38,8 @@ def init_app(app):
     @app.route('/about')
     def about():
         return flask.render_template('about.html')
+
+    @app.teardown_appcontext
+    def close_db(*args, **kwargs):
+        return close_connection(*args, **kwargs)
 
