@@ -10,12 +10,13 @@ class FfmpegRuntimeError(Exception):
 class FfprobeRuntimeError(Exception):
     pass
 
-def make_snapshot(video_path, time):
+def make_snapshot(video_path, time, vres=720):
     stream = (ffmpeg
               .input(video_path,
                      ss=time)
+              .filter_('scale', -1, vres, flags='fast_bilinear')
               .output('pipe:1',
-                      format='singlejpeg',
+                      format='apng',
                       vframes=1,
                       q=1,
                       threads=1))

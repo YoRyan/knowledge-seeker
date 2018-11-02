@@ -29,6 +29,10 @@ class Timecode(timedelta):
         return Timecode.from_timedelta(timedelta.__mul__(self, other))
     def __truediv__(self, other):
         return Timecode.from_timedelta(timedelta.__truediv__(self, other))
+    @property
+    def milliseconds(self):
+        av = abs(self)
+        return round(av.microseconds/1000 + av.seconds*1000)
     def strftimecode(s):
         match = re.search(r'^(\d*:)?(\d+):(\d+\.?\d*)$', s)
         if match is not None:

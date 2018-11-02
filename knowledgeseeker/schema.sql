@@ -1,17 +1,26 @@
-DROP TABLE IF EXISTS episode;
+PRAGMA foreign_keys = ON;
 DROP TABLE IF EXISTS snapshot;
+DROP TABLE IF EXISTS snapshot_tiny;
+DROP TABLE IF EXISTS episode;
 
 CREATE TABLE episode (
     id           INTEGER PRIMARY KEY,
-    episode_slug TEXT    NOT NULL,
-    season_slug  TEXT    NOT NULL
+    season_slug  TEXT    NOT NULL,
+    episode_slug TEXT    NOT NULL
 );
 CREATE TABLE snapshot (
-    episode_id INTEGER,
-    ms         INTEGER,
-    full_jpeg  BLOB    NOT NULL,
-    tiny_jpeg  BLOB    NOT NULL,
-               PRIMARY KEY (episode_id, ms)
-               FOREIGN KEY (episode_id) REFERENCES episode(id)
-               CHECK(ms >= 0)
+    episode_id    INTEGER,
+    ms            INTEGER,
+    png           BLOB    NOT NULL,
+                  PRIMARY KEY (episode_id, ms)
+                  FOREIGN KEY (episode_id) REFERENCES episode(id)
+                  CHECK(ms >= 0)
+);
+CREATE TABLE snapshot_tiny (
+    episode_id    INTEGER,
+    ms            INTEGER,
+    jpeg          BLOB    NOT NULL,
+                  PRIMARY KEY (episode_id, ms)
+                  FOREIGN KEY (episode_id) REFERENCES episode(id)
+                  CHECK(ms >= 0)
 );

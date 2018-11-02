@@ -8,10 +8,10 @@ from mimetypes import guess_type
 from pathlib import Path
 from srt import parse as parse_srt
 
+import knowledgeseeker.database as database
 from .utils import Timecode
 from .searcher import init_subtitle_search
 from .video import FfprobeRuntimeError, video_duration
-from knowledgeseeker.database import get_db
 
 LIBRARY_PICKLE_FILE = 'library_data.P'
 
@@ -117,10 +117,12 @@ def read_library_command():
     # Index all subtitles for searching
     init_subtitle_search(library_data)
 
-    db = get_db()
+    database.remove()
+    db = database.get_db()
     with current_app.open_resource('schema.sql', mode='r') as f:
         db.cursor().executescript(f.read())
     db.commit()
+    database.populate(library_data)
 
 def init_app(app):
     instance_path = Path(app.instance_path)

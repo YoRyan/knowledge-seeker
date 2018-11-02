@@ -9,6 +9,7 @@ setup(
     install_requires=[
         'flask',
         'ffmpeg-python',
+        'opencv-python-headless',
         'srt',
         'whoosh'
     ],
