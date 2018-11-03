@@ -1,13 +1,19 @@
 import flask
+import io
 import json
 import re
 import subprocess
+import textwrap as tw
+from base64 import b64decode
 from datetime import datetime, timedelta
 from os import environ
 from pathlib import Path
 from time import mktime
+
+from PIL import Image, ImageDraw, ImageFont
 from wsgiref.handlers import format_date_time
 
+import knowledgeseeker.database as database
 from .utils import (Timecode, match_season_episode, episode_has_subtitles,
                     parse_timecode, check_timecode_range, set_expires, static_cached)
 from .video import (make_snapshot, make_snapshot_with_subtitles, make_tiny_snapshot,
@@ -16,32 +22,28 @@ from .video import (make_snapshot, make_snapshot_with_subtitles, make_tiny_snaps
 
 bp = flask.Blueprint('clipper', __name__)
 
-@bp.route('/<season>/<episode>/<timecode>/pic')
-@match_season_episode
-@parse_timecode('timecode')
+@bp.route('/<season>/<episode>/<int:ms>/pic')
 @set_expires
-def snapshot(season, episode, timecode):
-    data = make_snapshot(episode.video_path, timecode)
-    return flask.Response(data, mimetype='image/jpeg')
+def snapshot(season, episode, ms):
+    # Load PNG from database.
+    raw_png = database.get_full_image(season, episode, ms)
+    image = Image.open(io.BytesIO(raw_png))
 
-@bp.route('/<season>/<episode>/<timecode>/pic/sub')
-@match_season_episode
-@episode_has_subtitles
-@parse_timecode('timecode')
-@set_expires
-def snapshot_with_subtitles(season, episode, timecode):
-    data = call_with_fonts(make_snapshot_with_subtitles,
-                           episode.video_path,
-                           episode.subtitles_path, timecode)
-    return flask.Response(data, mimetype='image/jpeg')
+    # Draw text if requested.
+    top_text = b64decode(flask.request.args.get('topb64', '')).decode('ascii')
+    bottom_text = b64decode(flask.request.args.get('btmb64', '')).decode('ascii')
+    if top_text != '' or bottom_text != '':
+        drawtext(image, top_text, bottom_text)
 
-@bp.route('/<season>/<episode>/<timecode>/pic/tiny')
-@static_cached
-@match_season_episode
-@parse_timecode('timecode')
+    # Return as compressed JPEG.
+    res = io.BytesIO()
+    image.save(res, 'jpeg', quality=85)
+    return flask.Response(res.getvalue(), mimetype='image/jpeg')
+
+@bp.route('/<season>/<episode>/<int:ms>/pic/tiny')
 @set_expires
-def snapshot_tiny(season, episode, timecode):
-    data = make_tiny_snapshot(episode.video_path, timecode)
+def snapshot_tiny(season, episode, ms):
+    data = database.get_tiny_image(season, episode, ms)
     return flask.Response(data, mimetype='image/jpeg')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
@@ -97,6 +99,35 @@ def webm_with_subtitles(season, episode, start_timecode, end_timecode):
                            episode.subtitles_path, start_timecode, end_timecode,
                            vres=flask.current_app.config['WEBM_VRES'])
     return flask.Response(data, mimetype='video/webm')
+
+
+def drawtext(image, top_text, bottom_text):
+    VMARGIN = round(0.1*image.height)
+    SPACING = 4
+
+    font_path = flask.current_app.config.get('SUBTITLES_FONT', None)
+    font = (ImageFont.truetype(
+            font=font_path,
+            size=flask.current_app.config.get('SUBTITLES_FONT_SIZE'))
+        if font_path is not None else None)
+    draw = ImageDraw.Draw(image)
+    def wrap(t):
+        return '\n'.join(tw.wrap(
+            t,
+            width=flask.current_app.config.get('SUBTITLES_FONT_MAXWIDTH')))
+
+    if top_text != '':
+        text = wrap(top_text)
+        size = draw.multiline_textsize(text, font=font, spacing=SPACING)
+        pos = (round(image.width/2 - size[0]/2), VMARGIN)
+        draw.multiline_text(pos, text, font=font, spacing=SPACING, align='center')
+
+    if bottom_text != '':
+        text = wrap(bottom_text)
+        size = draw.multiline_textsize(text, font=font, spacing=SPACING)
+        pos = (round(image.width/2 - size[0]/2), image.height - VMARGIN - size[1])
+        draw.multiline_text(pos, text, font=font, spacing=SPACING, align='center')
+
 
 def call_with_fonts(callee, *args, **kwargs):
     app_config = flask.current_app.config

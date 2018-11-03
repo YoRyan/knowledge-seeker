@@ -10,6 +10,7 @@ setup(
         'flask',
         'ffmpeg-python',
         'opencv-python-headless',
+        'Pillow',
         'srt',
         'whoosh'
     ],
