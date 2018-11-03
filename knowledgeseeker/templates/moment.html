@@ -39,6 +39,11 @@
                    href="{{ url_for('clipper.snapshot', ms=ms, **slug_kwargs) }}">
                         JPEG
                 </a>
+                <a class="media-link jpeg"
+                   target="_blank"
+                   href="{{ url_for('clipper.snapshot', ms=ms, btmb64=encode_text(current_sub['content']), **slug_kwargs) }}">
+                        JPEG+Sub
+                </a>
         </div>
         <div class="subtitle-list">
 {% for row in subtitles %}

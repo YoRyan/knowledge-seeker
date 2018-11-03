@@ -1,5 +1,6 @@
 import flask
 import re
+from base64 import b64encode
 from datetime import timedelta
 
 from knowledgeseeker.database import get_db
@@ -147,6 +148,8 @@ def browse_moment(season, episode, ms):
     nav_list += [row['ms'] for row in cur.fetchall()]
     nav_list.sort()
 
+    def encode_text(content):
+        return b64encode(re.sub(r'</?[^>]+>', '', content).encode('ascii'))
     return flask.render_template(
         'moment.html',
         season=season, season_name=season_name, season_has_icon=season_has_icon,
@@ -154,5 +157,6 @@ def browse_moment(season, episode, ms):
         ms=ms,
         subtitles=subtitles,
         current_sub=current_sub,
-        nav_list=nav_list)
+        nav_list=nav_list,
+        encode_text=encode_text)
 
