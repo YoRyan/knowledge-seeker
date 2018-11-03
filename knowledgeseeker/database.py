@@ -52,11 +52,12 @@ def populate(library_data):
         for episode in season.episodes:
             print(' - %s' % episode.name)
             cur.execute(
-                'INSERT INTO episode (id, slug, name, season_id) '
-                '       VALUES (:id, :slug, :name, :season_id)',
+                'INSERT INTO episode (id, slug, name, duration, season_id) '
+                '       VALUES (:id, :slug, :name, :duration, :season_id)',
                 { 'id': episode_key,
                   'slug': episode.slug,
                   'name': episode.name,
+                  'duration': episode.duration.milliseconds,
                   'season_id': season_key })
             populate_episode(episode, episode_key, cur)
             populate_subtitles(episode, episode_key, cur)
@@ -66,8 +67,9 @@ def populate(library_data):
 
 
 def populate_episode(episode, key, cur):
+    # Locate and save significant frames.
     vidcap = cv2.VideoCapture(str(episode.video_path))
-    frames = saved = 0
+    frames = saved = ms = 0
     last = None
     success, image = vidcap.read()
     while success:
@@ -100,6 +102,19 @@ def populate_episode(episode, key, cur):
 
         frames += 1
         success, image = vidcap.read()
+
+    # Set the episode's preview frame.
+    cur.execute(
+        '  SELECT ms FROM snapshot '
+        '   WHERE episode_id=:episode_id '
+        'ORDER BY ABS(ms-:target) ASC LIMIT 1',
+        { 'episode_id': key, 'target': round(ms/2) })
+    res = cur.fetchone()
+    if res is not None:
+        cur.execute(
+            'UPDATE episode SET snapshot_ms=:snapshot_ms WHERE id=:id',
+            { 'id': key, 'snapshot_ms': res['ms'] })
+
     print('   %d/%d frames (%2.1f%%) saved' % (saved, frames, saved/frames*100.0))
 
 

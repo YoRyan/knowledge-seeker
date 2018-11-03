@@ -4,30 +4,32 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='season.css') }}">
 {% endblock %}
 
-{% block title %}{{ season.name }}{% endblock %}
+{% block title %}{{ season_name }}{% endblock %}
 
 {% block header %}
-{% if season.icon is not none %}
+{% if season_has_icon %}
 <img class="season-icon"
-     src="{{ url_for('explorer.season_icon', season=season.slug) }}"
+     src="{{ url_for('explorer.season_icon', season=season) }}"
      alt="">
 {% endif %}
-{{ season.name }}
+{{ season_name }}
 {% endblock %}
 
 {% block content %}
 <section class="season-standalone">
-{% for episode in season.episodes %}
-{% set episode_kwargs = { 'season': season.slug, 'episode': episode.slug } %}
+{% for row in episodes %}
+{% set slug_kwargs = { 'season': season, 'episode': row['slug'] } %}
         <a class="episode"
-           href="{{ url_for('explorer.browse_episode', **episode_kwargs) }}">
+           href="{{ url_for('explorer.browse_episode', **slug_kwargs) }}">
+{% if row['snapshot_ms'] is not none %}
                 <span class="image-timecode-wrap">
                         <img class="image"
-                             src="{{ url_for('clipper.snapshot_tiny', timecode=episode.preview, **episode_kwargs) }}"
-                             alt="{{ episode.name }}">
-                        <span class="timecode episode-length">{{ episode.duration.str_seconds() }}</span>
+                             src="{{ url_for('clipper.snapshot_tiny', ms=row['snapshot_ms'], **slug_kwargs) }}"
+                             alt="{{ row['name'] }}">
+                        <span class="timecode episode-length">{{ str_ms(row['duration']) }}</span>
                 </span>
-                <span class="episode-name">{{ episode.name }}</span>
+{% endif %}
+                <span class="episode-name">{{ row['name'] }}</span>
         </a>
 {% endfor %}
 </section>

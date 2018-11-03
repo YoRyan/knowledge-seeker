@@ -7,11 +7,13 @@ CREATE TABLE season (
     name     TEXT
 );
 CREATE TABLE episode (
-    id        INTEGER PRIMARY KEY,
-    slug      TEXT    NOT NULL,
-    name      TEXT,
-    season_id INTEGER NOT NULL,
-              FOREIGN KEY (season_id) REFERENCES season(id)
+    id          INTEGER PRIMARY KEY,
+    slug        TEXT    NOT NULL,
+    name        TEXT,
+    duration    INTEGER NOT NULL,
+    snapshot_ms INTEGER,
+    season_id   INTEGER NOT NULL,
+                FOREIGN KEY (season_id) REFERENCES season(id)
 );
 CREATE TABLE snapshot (
     episode_id INTEGER NOT NULL,
