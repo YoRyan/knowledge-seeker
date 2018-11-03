@@ -2,19 +2,12 @@
 {% extends 'base.html' %}
 
 {% set slug_kwargs = { 'season': season, 'episode': episode } %}
-{% set this_subtitle = none %}
-{% for row in subtitles %}
-        {% if ms >= row['start_ms']
-              and ms <= row['end_ms'] %}
-              {% set this_subtitle = row %}
-        {% endif %}
-{% endfor %}
  
 {% block title %}
-{% if this_subtitle is none %}
+{% if current_sub is none %}
         {{ episode_name }} - {{ season_name }}
 {% else %}
-        "{{ this_subtitle['content']|safe }}" - {{ episode_name }} - {{ season_name }}
+        "{{ current_sub['content']|safe }}" - {{ episode_name }} - {{ season_name }}
 {% endif %}
 {% endblock %}
 
@@ -49,8 +42,7 @@
         </div>
         <div class="subtitle-list">
 {% for row in subtitles %}
-{% if ms >= row['start_ms']
-      and ms <= row['end_ms'] %}
+{% if ms >= row['start_ms'] and ms <= row['end_ms'] %}
                 <span class="subtitle now">{{ row['content']|safe }}</span>
 {% elif row['snapshot_ms'] is not none %}
                 <span class="subtitle">

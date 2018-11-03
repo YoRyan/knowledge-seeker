@@ -130,6 +130,8 @@ def browse_moment(season, episode, ms):
         { 'episode_key': episode_key, 'ms': ms,
           'ms_range': CLOSE_SUBTITLE_SECS*1000 })
     subtitles = cur.fetchall()
+    current_sub = next(filter(lambda row: ms >= row['start_ms']
+                                          and ms <= row['end_ms'], subtitles), None)
 
     # Locate surrounding images.
     nav_list = [ms]
@@ -151,5 +153,6 @@ def browse_moment(season, episode, ms):
         episode=episode, episode_name=episode_name,
         ms=ms,
         subtitles=subtitles,
+        current_sub=current_sub,
         nav_list=nav_list)
 
