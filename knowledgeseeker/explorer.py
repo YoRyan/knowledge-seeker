@@ -2,10 +2,16 @@ import flask
 import re
 from datetime import timedelta
 
+from knowledgeseeker.database import get_db
 from .utils import (Timecode, match_season, match_season_episode,
                     episode_has_subtitles, parse_timecode, set_expires)
 
+
 bp = flask.Blueprint('explorer', __name__)
+
+NAV_STEPS = 3
+CLOSE_SUBTITLE_SECS = 3
+
 
 @bp.route('/<season>/')
 @match_season
@@ -46,28 +52,56 @@ def browse_episode(season, episode):
                                  episode=episode,
                                  subtitles=rendered_subtitles)
 
-@bp.route('/<season>/<episode>/<timecode>/')
-@match_season_episode
-@parse_timecode('timecode')
-def browse_moment(season, episode, timecode):
-    kwargs = {}
-    kwargs['season'] = season
-    kwargs['episode'] = episode
-    kwargs['timecode'] = timecode
-    # timecodes for split command
-    if timecode == episode.duration:
-        split_timecodes = [timecode - timedelta(seconds=3), timecode]
-    else:
-        split_timecodes = [timecode, timecode + timedelta(seconds=3)]
-    kwargs['split_timecodes'] = split_timecodes
-    # surrounding subtitles
-    kwargs['subtitles'] = surrounding_subtitles(episode, timecode)
-    # page title
-    kwargs['current_line'] = current_line(episode, timecode)
-    # navigation previews
-    kwargs['step_times'] = step_times(episode, timecode)
-    # render template
-    return flask.render_template('moment.html', **kwargs)
+@bp.route('/<season>/<episode>/<int:ms>/')
+def browse_moment(season, episode, ms):
+    cur = get_db().cursor()
+    cur.execute('PRAGMA full_column_names = ON')
+
+    # Check that season, episode, and specified time are valid.
+    cur.execute(
+        'SELECT season.slug, season.name, season.icon_png, '
+        '       episode.slug, episode.name, episode.id, snapshot.ms FROM '
+        '    season '
+        '    INNER JOIN episode  ON episode.season_id = season.id '
+        '    INNER JOIN snapshot ON snapshot.episode_id = episode.id '
+        ' WHERE snapshot.ms=:ms '
+        '       AND season.slug=:season_slug '
+        '       AND episode.slug=:episode_slug',
+        { 'ms': ms, 'season_slug': season, 'episode_slug': episode })
+    info = cur.fetchone()
+    if info is None:
+        flask.abort(404)
+    episode_key = info['episode.id']
+
+    # Locate relevant subtitles.
+    cur.execute(
+        'SELECT content, start_ms, end_ms, snapshot_ms FROM subtitle '
+        ' WHERE subtitle.episode_id=:episode_key '
+        '       AND MIN(ABS(start_ms-:ms), ABS(end_ms-:ms))<=:ms_range',
+        { 'episode_key': episode_key, 'ms': ms,
+          'ms_range': CLOSE_SUBTITLE_SECS*1000 })
+    subtitles = cur.fetchall()
+
+    # Locate surrounding images.
+    nav_list = [ms]
+    cur.execute(
+        'SELECT ms FROM snapshot WHERE ms<:ms '
+        'ORDER BY ms DESC LIMIT :steps',
+        { 'ms': ms, 'steps': NAV_STEPS })
+    nav_list += [row['snapshot.ms'] for row in cur.fetchall()]
+    cur.execute(
+        'SELECT ms FROM snapshot WHERE ms>:ms '
+        'ORDER BY ms ASC LIMIT :steps',
+        { 'ms': ms, 'steps': NAV_STEPS })
+    nav_list += [row['snapshot.ms'] for row in cur.fetchall()]
+    nav_list.sort()
+
+    return flask.render_template(
+        'moment.html',
+        **{ 'ms': ms,
+            'info': info,
+            'subtitles': subtitles,
+            'nav_list': nav_list })
 
 @bp.route('/<season>/<episode>/<first_timecode>/<second_timecode>/')
 @match_season_episode

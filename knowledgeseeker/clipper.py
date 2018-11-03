@@ -13,7 +13,7 @@ from time import mktime
 from PIL import Image, ImageDraw, ImageFont
 from wsgiref.handlers import format_date_time
 
-import knowledgeseeker.database as database
+from knowledgeseeker.database import get_db
 from .utils import (Timecode, match_season_episode, episode_has_subtitles,
                     parse_timecode, check_timecode_range, set_expires, static_cached)
 from .video import (make_snapshot, make_snapshot_with_subtitles, make_tiny_snapshot,
@@ -26,8 +26,17 @@ bp = flask.Blueprint('clipper', __name__)
 @set_expires
 def snapshot(season, episode, ms):
     # Load PNG from database.
-    raw_png = database.get_full_image(season, episode, ms)
-    image = Image.open(io.BytesIO(raw_png))
+    cur = get_db().cursor()
+    cur.execute(
+        'SELECT snapshot.png FROM '
+        '       season '
+        '       INNER JOIN episode  ON episode.season_id = season.id '
+        '       INNER JOIN snapshot ON snapshot.episode_id = episode.id '
+        ' WHERE snapshot.ms=:ms', { 'ms': ms })
+    res = cur.fetchone()
+    if res is None:
+        flask.abort(404)
+    image = Image.open(io.BytesIO(res['png']))
 
     # Draw text if requested.
     top_text = b64decode(flask.request.args.get('topb64', '')).decode('ascii')
@@ -43,8 +52,17 @@ def snapshot(season, episode, ms):
 @bp.route('/<season>/<episode>/<int:ms>/pic/tiny')
 @set_expires
 def snapshot_tiny(season, episode, ms):
-    data = database.get_tiny_image(season, episode, ms)
-    return flask.Response(data, mimetype='image/jpeg')
+    cur = get_db().cursor()
+    cur.execute(
+        'SELECT snapshot_tiny.jpeg FROM '
+        '       season '
+        '       INNER JOIN episode       ON episode.season_id = season.id '
+        '       INNER JOIN snapshot_tiny ON snapshot_tiny.episode_id = episode.id '
+        ' WHERE snapshot_tiny.ms=:ms', { 'ms': ms })
+    res = cur.fetchone()
+    if res is None:
+        flask.abort(404)
+    return flask.Response(res['jpeg'], mimetype='image/jpeg')
 
 @bp.route('/<season>/<episode>/<start_timecode>/<end_timecode>/gif')
 @match_season_episode

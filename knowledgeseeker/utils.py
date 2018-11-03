@@ -148,3 +148,8 @@ def static_cached(f):
             return f(**kwargs)
     return decorator
 
+
+def dt_milliseconds(dt):
+    av = abs(dt)
+    return round(av.microseconds/1000 + av.seconds*1000)
+

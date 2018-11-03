@@ -1,26 +1,45 @@
 PRAGMA foreign_keys = ON;
-DROP TABLE IF EXISTS snapshot;
-DROP TABLE IF EXISTS snapshot_tiny;
-DROP TABLE IF EXISTS episode;
 
+CREATE TABLE season (
+    id       INTEGER PRIMARY KEY,
+    slug     TEXT    NOT NULL,
+    icon_png BLOB,
+    name     TEXT
+);
 CREATE TABLE episode (
-    id           INTEGER PRIMARY KEY,
-    season_slug  TEXT    NOT NULL,
-    episode_slug TEXT    NOT NULL
+    id        INTEGER PRIMARY KEY,
+    slug      TEXT    NOT NULL,
+    name      TEXT,
+    season_id INTEGER NOT NULL,
+              FOREIGN KEY (season_id) REFERENCES season(id)
 );
 CREATE TABLE snapshot (
-    episode_id    INTEGER,
-    ms            INTEGER,
-    png           BLOB    NOT NULL,
-                  PRIMARY KEY (episode_id, ms)
-                  FOREIGN KEY (episode_id) REFERENCES episode(id)
-                  CHECK(ms >= 0)
+    episode_id INTEGER NOT NULL,
+    ms         INTEGER NOT NULL,
+    png        BLOB    NOT NULL,
+               PRIMARY KEY (episode_id, ms)
+               FOREIGN KEY (episode_id) REFERENCES episode(id)
+               CHECK(ms >= 0)
 );
 CREATE TABLE snapshot_tiny (
-    episode_id    INTEGER,
-    ms            INTEGER,
-    jpeg          BLOB    NOT NULL,
-                  PRIMARY KEY (episode_id, ms)
-                  FOREIGN KEY (episode_id) REFERENCES episode(id)
-                  CHECK(ms >= 0)
+    episode_id INTEGER NOT NULL,
+    ms         INTEGER NOT NULL,
+    jpeg       BLOB    NOT NULL,
+               PRIMARY KEY (episode_id, ms)
+               FOREIGN KEY (episode_id) REFERENCES episode(id)
+               CHECK(ms >= 0)
+);
+CREATE TABLE subtitle (
+    episode_id  INTEGER NOT NULL,
+    idx         INTEGER,
+    start_ms    INTEGER NOT NULL,
+    end_ms      INTEGER NOT NULL,
+    snapshot_ms INTEGER,
+    content     TEXT    NOT NULL,
+                PRIMARY KEY (episode_id, idx)
+                FOREIGN KEY (episode_id) REFERENCES episode(id)
+	        CHECK(start_ms >= 0)
+	        CHECK(end_ms > start_ms)
+	        CHECK(snapshot_ms >= start_ms)
+		CHECK(snapshot_ms <= end_ms)
 );

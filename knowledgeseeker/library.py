@@ -37,10 +37,7 @@ class Episode(object):
         self.name = name
         self.video_path = video_path
         self.subtitles_path = subtitles_path
-        self.subtitles = [Subtitle(Timecode.from_timedelta(subtitle.start),
-                                   Timecode.from_timedelta(subtitle.end),
-                                   subtitle.content, self)
-                          for subtitle in subtitles]
+        self.subtitles = subtitles
         # video duration
         try:
             self.duration = video_duration(video_path)
@@ -89,8 +86,7 @@ def read_episode_json(episode_data, relative_to_path=Path('.')):
     if subtitles_path is not None:
         subtitles_path = relative_to_path/Path(subtitles_path)
         with open(subtitles_path) as f:
-            contents = f.read()
-        subtitles = list(parse_srt(contents))
+            subtitles = list(parse_srt(f.read()))
         subtitles.sort(key=lambda s: s.index)
     else:
         subtitles = []
@@ -114,8 +110,6 @@ def read_library_command():
     current_app.library_data = library_data
     instance_path = Path(current_app.instance_path)
     save_pickle_file(library_data, instance_path/LIBRARY_PICKLE_FILE)
-    # Index all subtitles for searching
-    init_subtitle_search(library_data)
 
     database.remove()
     db = database.get_db()
