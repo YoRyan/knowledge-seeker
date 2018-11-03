@@ -63,6 +63,8 @@ def snapshot_tiny(season, episode, ms):
 def drawtext(image, top_text, bottom_text):
     VMARGIN = round(0.1*image.height)
     SPACING = 4
+    MAX_WIDTH = flask.current_app.config.get('SUBTITLES_FONT_MAXWIDTH')
+    MAX_LENGTH = MAX_WIDTH*2
 
     font_path = flask.current_app.config.get('SUBTITLES_FONT', None)
     font = (ImageFont.truetype(
@@ -71,18 +73,16 @@ def drawtext(image, top_text, bottom_text):
         if font_path is not None else None)
     draw = ImageDraw.Draw(image)
     def wrap(t):
-        return '\n'.join(tw.wrap(
-            t,
-            width=flask.current_app.config.get('SUBTITLES_FONT_MAXWIDTH')))
+        return '\n'.join(tw.wrap(t, width=MAX_WIDTH))
 
     if top_text != '':
-        text = wrap(top_text)
+        text = wrap(top_text[:MAX_LENGTH])
         size = draw.multiline_textsize(text, font=font, spacing=SPACING)
         pos = (round(image.width/2 - size[0]/2), VMARGIN)
         draw.multiline_text(pos, text, font=font, spacing=SPACING, align='center')
 
     if bottom_text != '':
-        text = wrap(bottom_text)
+        text = wrap(bottom_text[:MAX_LENGTH])
         size = draw.multiline_textsize(text, font=font, spacing=SPACING)
         pos = (round(image.width/2 - size[0]/2), image.height - VMARGIN - size[1])
         draw.multiline_text(pos, text, font=font, spacing=SPACING, align='center')
