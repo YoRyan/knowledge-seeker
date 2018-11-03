@@ -14,6 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 from wsgiref.handlers import format_date_time
 
 from knowledgeseeker.database import get_db
+from knowledgeseeker.utils import set_expires
 
 bp = flask.Blueprint('clipper', __name__)
 
