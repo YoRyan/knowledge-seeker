@@ -4,10 +4,10 @@
 {% set slug_kwargs = { 'season': season, 'episode': episode } %}
  
 {% block title %}
-{% if current_sub is none %}
+{% if current_line is none %}
         {{ episode_name }} - {{ season_name }}
 {% else %}
-        "{{ current_sub['content']|safe }}" - {{ episode_name }} - {{ season_name }}
+        "{{ current_line }}" - {{ episode_name }} - {{ season_name }}
 {% endif %}
 {% endblock %}
 
@@ -41,7 +41,7 @@
                 </a>
                 <a class="media-link jpeg"
                    target="_blank"
-                   href="{{ url_for('clips.snapshot', ms=ms, btmb64=encode_text(current_sub['content']), **slug_kwargs) }}">
+                   href="{{ url_for('clips.snapshot', ms=ms, btmb64=encode_text(current_line), **slug_kwargs) }}">
                         JPEG+Sub
                 </a>
         </div>
