@@ -24,7 +24,6 @@ def create_app(test_config=None):
 
     from . import searcher
     app.register_blueprint(searcher.bp)
-    searcher.init_app(app)
 
     init_app(app)
 

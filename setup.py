@@ -11,7 +11,6 @@ setup(
         'ffmpeg-python',
         'opencv-python-headless',
         'Pillow',
-        'srt',
-        'whoosh'
+        'srt'
     ],
 )

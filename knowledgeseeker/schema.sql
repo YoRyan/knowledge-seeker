@@ -45,3 +45,6 @@ CREATE TABLE subtitle (
 	        CHECK(snapshot_ms >= start_ms)
 		CHECK(snapshot_ms <= end_ms)
 );
+CREATE VIRTUAL TABLE subtitle_search
+       USING fts5(episode_id UNINDEXED, snapshot_ms UNINDEXED, content,
+	          tokenize = 'porter ascii');

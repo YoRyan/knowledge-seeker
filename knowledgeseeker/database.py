@@ -8,7 +8,7 @@ from flask import current_app, g
 from srt import parse as parse_srt
 
 import knowledgeseeker.video as video
-from knowledgeseeker.utils import dt_milliseconds
+from knowledgeseeker.utils import dt_milliseconds, strip_html
 
 
 FILENAME = 'data.db'
@@ -128,8 +128,7 @@ def populate_subtitles(episode, key, cur):
             '             AND ms>=:start_ms AND ms<=:end_ms '
             'ORDER BY ms',
             { 'episode_id': key, 'start_ms': start_ms, 'end_ms': end_ms })
-        snapshots = [row['ms'] for row in cur.fetchall()]
-        snapshot_ms = next(iter(snapshots), None)
+        snapshot_ms = next(map(lambda row: row['ms'], cur.fetchall()), None)
         cur.execute(
             'INSERT INTO subtitle (episode_id, idx, content, '
             '                      start_ms, end_ms, snapshot_ms) '
@@ -137,6 +136,12 @@ def populate_subtitles(episode, key, cur):
             '               :start_ms, :end_ms, :snapshot_ms)',
             { 'episode_id': key, 'content': sub.content, 'idx': sub.index,
               'start_ms': start_ms, 'end_ms': end_ms, 'snapshot_ms': snapshot_ms })
+        if snapshot_ms is not None:
+            cur.execute(
+                'INSERT INTO subtitle_search (episode_id, snapshot_ms, content) '
+                '       VALUES (:episode_id, :snapshot_ms, :content)',
+                { 'episode_id': key, 'snapshot_ms': snapshot_ms,
+                  'content': strip_html(sub.content) })
 
 
 def significant_frame(image, compare_to):

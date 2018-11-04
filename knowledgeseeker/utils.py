@@ -153,3 +153,7 @@ def dt_milliseconds(dt):
     av = abs(dt)
     return round(av.microseconds/1000 + av.seconds*1000)
 
+
+def strip_html(s):
+    return re.sub(r'</?[^>]+>', '', s)
+

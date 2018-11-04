@@ -1,74 +1,38 @@
-import flask
 import re
-import whoosh
-import whoosh.index
-from pathlib import Path
-from shutil import rmtree
 from urllib.parse import unquote
-from whoosh.fields import Schema, ID, TEXT, STORED
-from whoosh.qparser import QueryParser
 
-INDEX_DIR = 'subtitle_index'
-QUERY_STRING_ENCODING = 'ascii'
-QUERY_STRING_MAX_LENGTH = 80
+import flask
+
+from knowledgeseeker.database import get_db
+
+
+MAX_LENGTH = 80
 N_RESULTS = 50
 
 bp = flask.Blueprint('searcher', __name__)
 
+
 @bp.route('/search')
 def do_search():
-    index = flask.current_app.subtitle_index
-    if index is None:
-        flask.abort(501, 'search not available')
+    query = flask.request.args.get('q')
+    if query is None:
+        query = ''
 
-    search_query = flask.request.args.get('q')
-    if search_query is None:
-        search_query = ''
+    query = unquote(query)
+    query = re.sub(r'[^a-zA-Z0-9 \']', '', query)
+    query = query[0:MAX_LENGTH]
 
-    search_query = unquote(search_query)
-    search_query = re.sub(r'[^a-zA-Z0-9 \']', '', search_query)
-    search_query = search_query[0:QUERY_STRING_MAX_LENGTH]
-
-    with index.searcher() as searcher:
-        query = QueryParser('content', index.schema).parse(search_query)
-        results = searcher.search(query, limit=N_RESULTS)
-        return flask.render_template('search.html',
-                                     query=search_query,
-                                     n_results=len(results),
-                                     results=results)
-
-def init_subtitle_search(seasons):
-    # Create schema
-    schema = Schema(season=ID, episode=ID, content=TEXT(stored=True),
-                    season_slug=STORED, episode_slug=STORED,
-                    index=STORED, timecode=STORED)
-
-    # Create the index
-    index_path = Path(flask.current_app.instance_path)/INDEX_DIR
-    if index_path.is_dir():
-        rmtree(index_path)
-    index_path.mkdir(exist_ok=True)
-    index = whoosh.index.create_in(index_path, schema)
-
-    # Populate the index
-    writer = index.writer()
-    for season in seasons:
-        for episode in season.episodes:
-            for i, subtitle in enumerate(episode.subtitles):
-                content = re.sub(r'</?[^>]+>', '', subtitle.content)
-                writer.add_document(season=season.name,
-                                    episode=episode.name,
-                                    content=content,
-                                    season_slug=season.slug,
-                                    episode_slug=episode.slug,
-                                    index=i,
-                                    timecode=str(subtitle.preview))
-    writer.commit()
-
-def init_app(app):
-    index_path = Path(app.instance_path)/INDEX_DIR
-    try:
-        app.subtitle_index = whoosh.index.open_dir(index_path)
-    except whoosh.index.EmptyIndexError:
-        app.subtitle_index = None
+    cur = get_db().cursor()
+    cur.execute('PRAGMA full_column_names = ON')
+    cur.execute(
+        '    SELECT episode.slug, season.slug, search.snapshot_ms, search.content '
+        '           FROM season '
+        'INNER JOIN episode ON episode.season_id = season.id '
+        'INNER JOIN (SELECT episode_id, snapshot_ms, content FROM subtitle_search '
+        '             WHERE content MATCH :query LIMIT :results) search '
+        '           ON search.episode_id = episode.id',
+        { 'query': query, 'results': N_RESULTS })
+    results = cur.fetchall()
+    return flask.render_template('search.html', query=query, results=results,
+                                 n_results=len(results))
 

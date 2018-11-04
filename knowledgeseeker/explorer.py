@@ -4,7 +4,7 @@ from base64 import b64encode
 from datetime import timedelta
 
 from knowledgeseeker.database import get_db
-from knowledgeseeker.utils import Timecode, set_expires
+from knowledgeseeker.utils import Timecode, set_expires, strip_html
 
 
 bp = flask.Blueprint('explorer', __name__)
@@ -149,7 +149,7 @@ def browse_moment(season, episode, ms):
     nav_list.sort()
 
     def encode_text(content):
-        return b64encode(re.sub(r'</?[^>]+>', '', content).encode('ascii'))
+        return b64encode(strip_html(content).encode('ascii'))
     return flask.render_template(
         'moment.html',
         season=season, season_name=season_name, season_has_icon=season_has_icon,

@@ -22,11 +22,11 @@
         <p class="no-results">No results found for "{{ query }}".</p>
 {% else %}
         {% for result in results %}
-        {% set episode_kwargs = { 'season': result['season_slug'], 'episode': result['episode_slug'] } %}
+        {% set slug_kwargs = { 'season': result['season.slug'], 'episode': result['episode.slug'] } %}
         <a class="result"
-           href="{{ url_for('explorer.browse_moment', timecode=result['timecode'], **episode_kwargs) }}"
-           title="{{ result['content'] }}">
-                <img src="{{ url_for('clipper.snapshot_tiny', timecode=result['timecode'], **episode_kwargs) }}"
+           href="{{ url_for('explorer.browse_moment', ms=result['search.snapshot_ms'], **slug_kwargs) }}"
+           title="{{ result['search.content'] }}">
+                <img src="{{ url_for('clipper.snapshot_tiny', ms=result['search.snapshot_ms'], **slug_kwargs) }}"
                      alt="">
         </a>
         {% endfor %}

@@ -9,8 +9,6 @@ from pathlib import Path
 from srt import parse as parse_srt
 
 import knowledgeseeker.database as database
-from .utils import Timecode
-from .searcher import init_subtitle_search
 from .video import FfprobeRuntimeError, video_duration
 
 LIBRARY_PICKLE_FILE = 'library_data.P'
