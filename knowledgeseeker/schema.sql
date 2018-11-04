@@ -40,11 +40,11 @@ CREATE TABLE subtitle (
     content     TEXT    NOT NULL,
                 PRIMARY KEY (episode_id, idx)
                 FOREIGN KEY (episode_id) REFERENCES episode(id)
-	        CHECK(start_ms >= 0)
-	        CHECK(end_ms > start_ms)
-	        CHECK(snapshot_ms >= start_ms)
-		CHECK(snapshot_ms <= end_ms)
+                CHECK(start_ms >= 0)
+                CHECK(end_ms > start_ms)
+                CHECK(snapshot_ms >= start_ms)
+                CHECK(snapshot_ms <= end_ms)
 );
 CREATE VIRTUAL TABLE subtitle_search
        USING fts5(episode_id UNINDEXED, snapshot_ms UNINDEXED, content,
-	          tokenize = 'porter ascii');
+                  tokenize = 'porter ascii');

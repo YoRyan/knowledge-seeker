@@ -9,7 +9,7 @@
 {% block header %}
 {% if season_has_icon %}
 <img class="season-icon"
-     src="{{ url_for('explorer.season_icon', season=season) }}"
+     src="{{ url_for('webui.season_icon', season=season) }}"
      alt="">
 {% endif %}
 {{ season_name }}
@@ -20,11 +20,11 @@
 {% for row in episodes %}
 {% set slug_kwargs = { 'season': season, 'episode': row['slug'] } %}
         <a class="episode"
-           href="{{ url_for('explorer.browse_episode', **slug_kwargs) }}">
+           href="{{ url_for('webui.browse_episode', **slug_kwargs) }}">
 {% if row['snapshot_ms'] is not none %}
                 <span class="image-timecode-wrap">
                         <img class="image"
-                             src="{{ url_for('clipper.snapshot_tiny', ms=row['snapshot_ms'], **slug_kwargs) }}"
+                             src="{{ url_for('clips.snapshot_tiny', ms=row['snapshot_ms'], **slug_kwargs) }}"
                              alt="{{ row['name'] }}">
                         <span class="timecode episode-length">{{ str_ms(row['duration']) }}</span>
                 </span>

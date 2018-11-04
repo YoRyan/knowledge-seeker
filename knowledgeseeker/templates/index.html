@@ -12,16 +12,16 @@
 <p class="subtitle">an <em>Avatar: The Last Airbender</em> search engine</p>
 
 <p>
-        <img src="/static/logo-large.png" width="280" height="226" alt="logo">
+        <img src="{{ url_for('static', filename='logo-large.png') }}" width="280" height="226" alt="logo">
 </p>
 
-<form action="/search" method="get">
+<form action="{{ url_for('webui.search') }}" method="get">
         <input name="q" autofocus><button type="submit">Search Library</button>
         <p class="help">(try: "my honor")</p>
 </form>
 
 <p id="meta">
-        <a href="/about">about me</a>
+        <a href="{{ url_for('webui.about') }}">about me</a>
 </p>
 </div>
 {% endblock %}

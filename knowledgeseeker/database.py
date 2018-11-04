@@ -1,13 +1,10 @@
 import sqlite3
-from datetime import timedelta
 from pathlib import Path
 
 import cv2
 import numpy
 from flask import current_app, g
-from srt import parse as parse_srt
 
-import knowledgeseeker.video as video
 from knowledgeseeker.utils import dt_milliseconds, strip_html
 
 
@@ -161,4 +158,10 @@ def significant_frame(image, compare_to):
 
     changed_px = numpy.count_nonzero(threshold)
     return changed_px >= SIGNIFICANT_P*image.shape[0]*image.shape[1]
+
+
+def init_app(app):
+    @app.teardown_appcontext
+    def close_db(*args, **kwargs):
+        return close_connection(*args, **kwargs)
 

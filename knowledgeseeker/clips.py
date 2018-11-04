@@ -1,22 +1,20 @@
 import flask
 import io
-import json
-import re
-import subprocess
 import textwrap as tw
 from base64 import b64decode
-from datetime import datetime, timedelta
-from os import environ
 from pathlib import Path
-from time import mktime
 
 from PIL import Image, ImageDraw, ImageFont
-from wsgiref.handlers import format_date_time
 
 from knowledgeseeker.database import get_db
 from knowledgeseeker.utils import set_expires
 
-bp = flask.Blueprint('clipper', __name__)
+
+bp = flask.Blueprint('clips', __name__)
+
+
+TEXT_VMARGIN = 0.1
+TEXT_SPACING = 4
 
 @bp.route('/<season>/<episode>/<int:ms>/pic')
 @set_expires
@@ -62,8 +60,6 @@ def snapshot_tiny(season, episode, ms):
 
 
 def drawtext(image, top_text, bottom_text):
-    VMARGIN = round(0.1*image.height)
-    SPACING = 4
     MAX_WIDTH = flask.current_app.config.get('SUBTITLES_FONT_MAXWIDTH')
     MAX_LENGTH = MAX_WIDTH*2
 
@@ -78,15 +74,18 @@ def drawtext(image, top_text, bottom_text):
 
     if top_text != '':
         text = wrap(top_text[:MAX_LENGTH])
-        size = draw.multiline_textsize(text, font=font, spacing=SPACING)
-        pos = (round(image.width/2 - size[0]/2), VMARGIN)
-        draw.multiline_text(pos, text, font=font, spacing=SPACING, align='center')
+        size = draw.multiline_textsize(text, font=font, spacing=TEXT_SPACING)
+        pos = (round(image.width/2 - size[0]/2), round(TEXT_VMARGIN*image.height))
+        draw.multiline_text(pos, text, font=font,
+                            spacing=TEXT_SPACING, align='center')
 
     if bottom_text != '':
         text = wrap(bottom_text[:MAX_LENGTH])
-        size = draw.multiline_textsize(text, font=font, spacing=SPACING)
-        pos = (round(image.width/2 - size[0]/2), image.height - VMARGIN - size[1])
-        draw.multiline_text(pos, text, font=font, spacing=SPACING, align='center')
+        size = draw.multiline_textsize(text, font=font, spacing=TEXT_SPACING)
+        pos = (round(image.width/2 - size[0]/2),
+               image.height - round(TEXT_VMARGIN*image.height) - size[1])
+        draw.multiline_text(pos, text, font=font,
+                            spacing=TEXT_SPACING, align='center')
 
 
 def call_with_fonts(callee, *args, **kwargs):

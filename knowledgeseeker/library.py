@@ -1,20 +1,21 @@
-import click
 import json
-import os
-import pickle
+from pathlib import Path
+
+import click
 from flask import current_app
 from flask.cli import with_appcontext
-from mimetypes import guess_type
-from pathlib import Path
 from srt import parse as parse_srt
 
 import knowledgeseeker.database as database
-from .video import FfprobeRuntimeError, video_duration
+import knowledgeseeker.ffmpeg as ff
+
 
 LIBRARY_PICKLE_FILE = 'library_data.P'
 
+
 class LoadError(Exception):
     pass
+
 
 class Season(object):
     def __init__(self, slug, name=None, episodes=[], icon_path=None):
@@ -28,37 +29,26 @@ class Season(object):
         else:
             self.icon = None
 
+
 class Episode(object):
-    def __init__(self, slug, video_path, name=None, subtitles_path=None,
-                 subtitles=[]):
+    def __init__(self, slug, video_path, name=None, subtitles=[]):
         self.slug = slug
         self.name = name
         self.video_path = video_path
         self.subtitles_path = subtitles_path
         self.subtitles = subtitles
-        # video duration
         try:
-            self.duration = video_duration(video_path)
-        except FfprobeRuntimeError:
+            self.duration = ff.video_duration(video_path)
+        except ff.FfprobeRuntimeError:
             raise LoadError('failed to read video file: %s' % video_path)
-        # preview thumbnail
-        self.preview = self.duration/2
 
-class Subtitle(object):
-    def __init__(self, start, end, content, episode):
-        self.start = start
-        self.end = end
-        self.content = content
-        # preview thumbnail
-        self.preview = (start + end)/2
-        # 10% buffer to deal with slightly overlapping subtitles
-        self.nav = start + (end - start)*0.1
 
 def load_library_file(library_path):
     with open(str(library_path), 'rt') as f:
         js_data = json.load(f)
         return [read_season_json(season_data, library_path.parent)
                 for season_data in js_data]
+
 
 def read_season_json(season_data, relative_to_path=Path('.')):
     slug = season_data['seasonSlug']
@@ -75,6 +65,7 @@ def read_season_json(season_data, relative_to_path=Path('.')):
 
     return Season(slug, name=name, episodes=episodes, icon_path=icon)
 
+
 def read_episode_json(episode_data, relative_to_path=Path('.')):
     slug = episode_data['episodeSlug']
     video = relative_to_path/Path(episode_data['videoFile'])
@@ -89,39 +80,22 @@ def read_episode_json(episode_data, relative_to_path=Path('.')):
     else:
         subtitles = []
 
-    return Episode(slug, video, name=name, subtitles_path=subtitles_path,
-                   subtitles=subtitles)
+    return Episode(slug, video, name=name, subtitles=subtitles)
 
-def load_pickle_file(path):
-    with open(path, 'rb') as f:
-        return pickle.load(f)
 
-def save_pickle_file(library_data, path):
-    with open(path, 'wb') as f:
-        pickle.dump(library_data, f)
+def init_app(app):
+    app.cli.add_command(read_library_command)
+
 
 @click.command('read-library')
 @with_appcontext
 def read_library_command():
-    # Probe library metadata
-    library_data = load_library_file(Path(current_app.config['LIBRARY']))
-    current_app.library_data = library_data
-    instance_path = Path(current_app.instance_path)
-    save_pickle_file(library_data, instance_path/LIBRARY_PICKLE_FILE)
-
     database.remove()
     db = database.get_db()
     with current_app.open_resource('schema.sql', mode='r') as f:
         db.cursor().executescript(f.read())
     db.commit()
-    database.populate(library_data)
 
-def init_app(app):
-    instance_path = Path(app.instance_path)
-    # Load library metadata
-    try:
-        app.library_data = load_pickle_file(instance_path/LIBRARY_PICKLE_FILE)
-    except FileNotFoundError:
-        app.library_data = []
-    app.cli.add_command(read_library_command)
+    library_data = load_library_file(Path(current_app.config['LIBRARY']))
+    database.populate(library_data)
 

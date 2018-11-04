@@ -1,16 +1,29 @@
-import flask
 import re
+from urllib.parse import unquote
+
+import flask
 from base64 import b64encode
-from datetime import timedelta
 
 from knowledgeseeker.database import get_db
 from knowledgeseeker.utils import Timecode, set_expires, strip_html
 
 
-bp = flask.Blueprint('explorer', __name__)
+bp = flask.Blueprint('webui', __name__)
 
 NAV_STEPS = 3
 CLOSE_SUBTITLE_SECS = 3
+MAX_SEARCH_LENGTH = 80
+N_SEARCH_RESULTS = 50
+
+
+@bp.route('/')
+def index():
+        return flask.render_template('index.html')
+
+
+@bp.route('/about')
+def about():
+        return flask.render_template('about.html')
 
 
 @bp.route('/<season>/')
@@ -159,4 +172,29 @@ def browse_moment(season, episode, ms):
         current_sub=current_sub,
         nav_list=nav_list,
         encode_text=encode_text)
+
+
+@bp.route('/search')
+def search():
+    query = flask.request.args.get('q')
+    if query is None:
+        query = ''
+
+    query = unquote(query)
+    query = re.sub(r'[^a-zA-Z0-9 \']', '', query)
+    query = query[0:MAX_SEARCH_LENGTH]
+
+    cur = get_db().cursor()
+    cur.execute('PRAGMA full_column_names = ON')
+    cur.execute(
+        '    SELECT episode.slug, season.slug, search.snapshot_ms, search.content '
+        '           FROM season '
+        'INNER JOIN episode ON episode.season_id = season.id '
+        'INNER JOIN (SELECT episode_id, snapshot_ms, content FROM subtitle_search '
+        '             WHERE content MATCH :query LIMIT :n_results) search '
+        '           ON search.episode_id = episode.id',
+        { 'query': query, 'n_results': N_SEARCH_RESULTS })
+    results = cur.fetchall()
+    return flask.render_template('search.html', query=query, results=results,
+                                 n_results=len(results))
 

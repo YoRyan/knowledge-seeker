@@ -1,12 +1,12 @@
 .subtitle {
-        display: block;
         text-decoration: none;
+        margin: 0.3rem 0;
 }
 .subtitle > * {
         vertical-align: middle;
 }
 .subtitle-text {
-        margin-left: 1rem;
+        padding-left: 1rem;
         font-size: 110%;
 }
 

@@ -1,8 +1,7 @@
-import flask
 from os import environ, makedirs
 from pathlib import Path
 
-from knowledgeseeker.database import close_connection
+import flask
 
 
 def create_app(test_config=None):
@@ -15,30 +14,17 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import clipper, explorer
-    app.register_blueprint(clipper.bp)
-    app.register_blueprint(explorer.bp)
+    import knowledgeseeker.clips as clips
+    app.register_blueprint(clips.bp)
 
-    from . import library
+    import knowledgeseeker.webui as webui
+    app.register_blueprint(webui.bp)
+
+    import knowledgeseeker.library as library
     library.init_app(app)
 
-    from . import searcher
-    app.register_blueprint(searcher.bp)
-
-    init_app(app)
+    import knowledgeseeker.database as database
+    database.init_app(app)
 
     return app
-
-def init_app(app):
-    @app.route('/')
-    def index():
-        return flask.render_template('index.html')
-
-    @app.route('/about')
-    def about():
-        return flask.render_template('about.html')
-
-    @app.teardown_appcontext
-    def close_db(*args, **kwargs):
-        return close_connection(*args, **kwargs)
 

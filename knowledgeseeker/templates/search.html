@@ -11,7 +11,7 @@
 {% block search_query %}{{ query }}{% endblock %}
 
 {% block content %}
-<form action="{{ url_for('searcher.do_search') }}"
+<form action="{{ url_for('webui.search') }}"
       method="get">
         <input name="q" value="{{ query }}" autofocus><button type="submit">Search Again</button>
 </form>
@@ -24,9 +24,9 @@
         {% for result in results %}
         {% set slug_kwargs = { 'season': result['season.slug'], 'episode': result['episode.slug'] } %}
         <a class="result"
-           href="{{ url_for('explorer.browse_moment', ms=result['search.snapshot_ms'], **slug_kwargs) }}"
+           href="{{ url_for('webui.browse_moment', ms=result['search.snapshot_ms'], **slug_kwargs) }}"
            title="{{ result['search.content'] }}">
-                <img src="{{ url_for('clipper.snapshot_tiny', ms=result['search.snapshot_ms'], **slug_kwargs) }}"
+                <img src="{{ url_for('clips.snapshot_tiny', ms=result['search.snapshot_ms'], **slug_kwargs) }}"
                      alt="">
         </a>
         {% endfor %}
