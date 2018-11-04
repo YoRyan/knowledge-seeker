@@ -1,4 +1,6 @@
 import sqlite3
+from concurrent.futures import as_completed, ThreadPoolExecutor
+from datetime import datetime
 from pathlib import Path
 
 import cv2
@@ -9,6 +11,7 @@ from knowledgeseeker.utils import dt_milliseconds, strip_html
 
 
 FILENAME = 'data.db'
+POPULATE_WORKERS = 4
 
 
 def get_db():
@@ -34,11 +37,15 @@ def remove():
 
 
 def populate(library_data):
-    db = get_db()
+    # check_same_thread needed to allow threads to access tables not created
+    # by themselves (I like to live dangerously).
+    db = sqlite3.connect(str(Path(current_app.instance_path)/FILENAME),
+                         check_same_thread=False)
+    db.row_factory = sqlite3.Row
     cur = db.cursor()
     season_key = episode_key = 0
+    episodes = {}
     for season in library_data:
-        print('\n%s' % season.name)
         cur.execute(
             'INSERT INTO season (id, slug, icon_png, name) '
             '       VALUES (:id, :slug, :icon_png, :name)',
@@ -47,38 +54,50 @@ def populate(library_data):
               'icon_png': season.icon,
               'name': season.name })
         for episode in season.episodes:
-            print(' - %s' % episode.name)
             cur.execute(
                 'INSERT INTO episode (id, slug, name, duration, '
-                '                     video_path, season_id) '
+                '                     video_path, subtitles_path, season_id) '
                 '       VALUES (:id, :slug, :name, :duration, '
-                '               :video_path, :season_id)',
+                '               :video_path, :subtitles_path, :season_id)',
                 { 'id': episode_key,
                   'slug': episode.slug,
                   'name': episode.name,
                   'duration': episode.duration.milliseconds,
                   'video_path': str(episode.video_path),
+                  'subtitles_path': str(episode.subtitles_path),
                   'season_id': season_key })
-            populate_episode(episode, episode_key, cur)
-            populate_subtitles(episode, episode_key, cur)
             episode_key += 1
-            db.commit()
+            episodes[episode_key] = episode
         season_key += 1
+    db.commit()
+
+    config = { 'full_vres': current_app.config['JPEG_VRES'],
+               'tiny_vres': current_app.config['JPEG_TINY_VRES'] }
+    def fill(key):
+        cursor = db.cursor()
+        episode = episodes[key]
+        saved, frames = populate_episode(episode, key, cursor, **config)
+        populate_subtitles(episode, key, cursor)
+        return ('%s - %d/%d frames (%.1f%%) saved'
+                % (episode.name, saved, frames, saved/frames*100.0))
+    with ThreadPoolExecutor(max_workers=POPULATE_WORKERS) as executor:
+        for res in executor.map(fill, episodes.keys()):
+            print(' * %s' % res)
+    db.commit()
 
 
-def populate_episode(episode, key, cur):
+def populate_episode(episode, key, cur, full_vres=720, tiny_vres=100):
     # Locate and save significant frames.
     vidcap = cv2.VideoCapture(str(episode.video_path))
     frames = saved = ms = 0
-    last = None
+    classifier = FrameClassifier()
     success, image = vidcap.read()
     while success:
-        if last is None or significant_frame(image, last):
-            last = image
+        ms = round(vidcap.get(cv2.CAP_PROP_POS_MSEC))
+        if classifier.classify(image, ms):
             saved += 1
-            ms = round(vidcap.get(cv2.CAP_PROP_POS_MSEC))
 
-            big_scale = current_app.config['JPEG_VRES']/image.shape[0]
+            big_scale = full_vres/image.shape[0]
             big_image = cv2.resize(
                 image,
                 (round(image.shape[1]*big_scale), round(image.shape[0]*big_scale)),
@@ -89,7 +108,7 @@ def populate_episode(episode, key, cur):
                 '       VALUES (:episode_id, :ms, :png)',
                 { 'episode_id': key, 'ms': ms, 'png': sqlite3.Binary(big_png) })
 
-            tiny_scale = current_app.config['JPEG_TINY_VRES']/image.shape[0]
+            tiny_scale = tiny_vres/image.shape[0]
             tiny_image = cv2.resize(
                 image,
                 (round(image.shape[1]*tiny_scale), round(image.shape[0]*tiny_scale)),
@@ -99,7 +118,6 @@ def populate_episode(episode, key, cur):
                 'INSERT INTO snapshot_tiny (episode_id, ms, jpeg) '
                 '       VALUES (:episode_id, :ms, :jpeg)',
                 { 'episode_id': key, 'ms': ms, 'jpeg': sqlite3.Binary(tiny_jpg) })
-
         frames += 1
         success, image = vidcap.read()
 
@@ -115,7 +133,45 @@ def populate_episode(episode, key, cur):
             'UPDATE episode SET snapshot_ms=:snapshot_ms WHERE id=:id',
             { 'id': key, 'snapshot_ms': res['ms'] })
 
-    print('   %d/%d frames (%2.1f%%) saved' % (saved, frames, saved/frames*100.0))
+    return saved, frames
+
+
+class FrameClassifier(object):
+
+    TRANS_THRESHOLD = 90.0
+    TARGET_FPS = 5.0
+
+    def __init__(self):
+        self._last = self._saved = None
+
+    def classify(self, image, ms):
+        # - Save all hard transitions (color difference > TRANS_THRESHOLD).
+        # - Save at least 3 images per second, but only if there isn't a long
+        #   period of duplicate frames.
+        if self._last is None:
+            self._last = (image, ms)
+            save = True
+        else:
+            last_image, last_ms = self._last
+            saved_image, saved_ms = self._saved
+
+            last_color = numpy.average(last_image, axis=(0, 1))
+            this_color = numpy.average(image, axis=(0, 1))
+            color_diff = numpy.sum(abs(last_color - this_color))
+            if color_diff > FrameClassifier.TRANS_THRESHOLD:
+                #cv2.imwrite('classify_last.png', last_image)
+                #cv2.imwrite('classify_next.png', image)
+                #input('transition detected at %d' % ms)
+                save = True
+            elif (ms - saved_ms >= 1000/FrameClassifier.TARGET_FPS
+                  and color_diff > 0.1):
+                save = True
+            else:
+                save = False
+        self._last = (image, ms)
+        if save:
+            self._saved = (image, ms)
+        return save
 
 
 def populate_subtitles(episode, key, cur):
@@ -142,25 +198,6 @@ def populate_subtitles(episode, key, cur):
                 '       VALUES (:episode_id, :snapshot_ms, :content)',
                 { 'episode_id': key, 'snapshot_ms': snapshot_ms,
                   'content': strip_html(sub.content) })
-
-
-def significant_frame(image, compare_to):
-    CHANGE_THRESHOLD = 10
-    SIGNIFICANT_P = 0.1
-    assert image.shape == compare_to.shape
-
-    diff = cv2.absdiff(image, compare_to)
-    flat = numpy.amax(diff, axis=2)
-    threshold = numpy.where(flat > CHANGE_THRESHOLD, 1, 0)
-
-    # Debug code to visualize the threshold result.
-    #diff_t = numpy.repeat(threshold*255, 3).reshape(
-    #    image.shape[0], image.shape[1], 3)
-    #cv2.imwrite('diff.png', diff)
-    #cv2.imwrite('diff_threshold.png', diff_t)
-
-    changed_px = numpy.count_nonzero(threshold)
-    return changed_px >= SIGNIFICANT_P*image.shape[0]*image.shape[1]
 
 
 def init_app(app):

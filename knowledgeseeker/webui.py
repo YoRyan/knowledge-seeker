@@ -148,7 +148,7 @@ def browse_moment(season, episode, ms):
         map(lambda row: strip_html(row['content']),
             filter(lambda row: ms >= row['start_ms'] and ms <= row['end_ms'],
                    subtitles)),
-        None)
+        '')
 
     # Locate surrounding images.
     nav_list = [ms]

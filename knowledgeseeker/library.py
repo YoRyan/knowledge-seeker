@@ -10,9 +10,6 @@ import knowledgeseeker.database as database
 import knowledgeseeker.ffmpeg as ff
 
 
-LIBRARY_PICKLE_FILE = 'library_data.P'
-
-
 class LoadError(Exception):
     pass
 
@@ -30,11 +27,17 @@ class Season(object):
 
 
 class Episode(object):
-    def __init__(self, slug, video_path, name=None, subtitles=[]):
+    def __init__(self, slug, video_path, subtitles_path=None, name=None):
         self.slug = slug
         self.name = name
         self.video_path = video_path
-        self.subtitles = subtitles
+        self.subtitles_path = subtitles_path
+        if subtitles_path is None:
+            self.subtitles = []
+        else:
+            with open(subtitles_path) as f:
+                self.subtitles = list(parse_srt(f.read()))
+                self.subtitles.sort(key=lambda s: s.index)
         try:
             self.duration = ff.video_duration(video_path)
         except ff.FfprobeRuntimeError:
@@ -44,41 +47,34 @@ class Episode(object):
 def load_library_file(library_path):
     with open(str(library_path), 'rt') as f:
         js_data = json.load(f)
-        return [read_season_json(season_data, library_path.parent)
-                for season_data in js_data]
+    return [read_season_json(season_data, relative_to=library_path.parent)
+            for season_data in js_data]
 
 
-def read_season_json(season_data, relative_to_path=Path('.')):
+def read_season_json(season_data, relative_to=Path('.')):
     slug = season_data['seasonSlug']
     name = season_data.get('seasonName', None)
 
     icon = season_data.get('seasonIcon', None)
     if icon is not None:
-        icon = relative_to_path/Path(icon)
+        icon = relative_to/Path(icon)
 
     episodes = season_data.get('episodes', [])
     if episodes != []:
-        episodes = [read_episode_json(episode_data, relative_to_path=relative_to_path)
+        episodes = [read_episode_json(episode_data, relative_to=relative_to)
                     for episode_data in season_data['episodes']]
 
     return Season(slug, name=name, episodes=episodes, icon_path=icon)
 
 
-def read_episode_json(episode_data, relative_to_path=Path('.')):
+def read_episode_json(episode_data, relative_to=Path('.')):
     slug = episode_data['episodeSlug']
-    video = relative_to_path/Path(episode_data['videoFile'])
     name = episode_data.get('episodeName', None)
-
+    video_path = relative_to/Path(episode_data['videoFile'])
     subtitles_path = episode_data.get('subtitleFile', None)
     if subtitles_path is not None:
-        subtitles_path = relative_to_path/Path(subtitles_path)
-        with open(subtitles_path) as f:
-            subtitles = list(parse_srt(f.read()))
-        subtitles.sort(key=lambda s: s.index)
-    else:
-        subtitles = []
-
-    return Episode(slug, video.resolve(), name=name, subtitles=subtitles)
+        subtitles_path = relative_to/Path(subtitles_path)
+    return Episode(slug, video_path, subtitles_path=subtitles_path, name=name)
 
 
 def init_app(app):

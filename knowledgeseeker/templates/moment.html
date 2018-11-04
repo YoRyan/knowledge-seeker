@@ -4,7 +4,7 @@
 {% set slug_kwargs = { 'season': season, 'episode': episode } %}
  
 {% block title %}
-{% if current_line is none %}
+{% if current_line == '' %}
         {{ episode_name }} - {{ season_name }}
 {% else %}
         "{{ current_line }}" - {{ episode_name }} - {{ season_name }}
