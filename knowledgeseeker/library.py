@@ -25,7 +25,6 @@ class Season(object):
         if icon_path is not None:
             with open(icon_path, 'rb') as f:
                 self.icon = f.read()
-            self.icon_mime = guess_type(str(icon_path))[0]
         else:
             self.icon = None
 
@@ -35,7 +34,6 @@ class Episode(object):
         self.slug = slug
         self.name = name
         self.video_path = video_path
-        self.subtitles_path = subtitles_path
         self.subtitles = subtitles
         try:
             self.duration = ff.video_duration(video_path)
@@ -80,7 +78,7 @@ def read_episode_json(episode_data, relative_to_path=Path('.')):
     else:
         subtitles = []
 
-    return Episode(slug, video, name=name, subtitles=subtitles)
+    return Episode(slug, video.resolve(), name=name, subtitles=subtitles)
 
 
 def init_app(app):

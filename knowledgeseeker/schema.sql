@@ -12,6 +12,7 @@ CREATE TABLE episode (
     name        TEXT,
     duration    INTEGER NOT NULL,
     snapshot_ms INTEGER,
+    video_path  TEXT,
     season_id   INTEGER NOT NULL,
                 FOREIGN KEY (season_id) REFERENCES season(id)
 );

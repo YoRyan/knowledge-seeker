@@ -49,12 +49,15 @@ def populate(library_data):
         for episode in season.episodes:
             print(' - %s' % episode.name)
             cur.execute(
-                'INSERT INTO episode (id, slug, name, duration, season_id) '
-                '       VALUES (:id, :slug, :name, :duration, :season_id)',
+                'INSERT INTO episode (id, slug, name, duration, '
+                '                     video_path, season_id) '
+                '       VALUES (:id, :slug, :name, :duration, '
+                '               :video_path, :season_id)',
                 { 'id': episode_key,
                   'slug': episode.slug,
                   'name': episode.name,
                   'duration': episode.duration.milliseconds,
+                  'video_path': str(episode.video_path),
                   'season_id': season_key })
             populate_episode(episode, episode_key, cur)
             populate_subtitles(episode, episode_key, cur)
