@@ -1,11 +1,12 @@
 import sqlite3
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
 
 import cv2
 import numpy
-from flask import current_app, g
+from flask import abort, current_app, g
 
 from knowledgeseeker.utils import dt_milliseconds, strip_html
 
@@ -34,6 +35,38 @@ def remove():
     path = Path(current_app.instance_path)/FILENAME
     if path.exists():
         path.unlink()
+
+
+def match_season(f):
+    @wraps(f)
+    def decorator(season, **kwargs):
+        cur = get_db().cursor()
+        cur.execute('SELECT id FROM season WHERE slug=:season_slug',
+                    { 'season_slug': season })
+        res = cur.fetchone()
+        if res is None:
+            abort(404, 'season not found')
+        return f(season_id=res['id'], **kwargs)
+    return decorator
+
+
+def match_episode(f):
+    @wraps(f)
+    def decorator(season, episode, **kwargs):
+        cur = get_db().cursor()
+        cur.execute('PRAGMA full_column_names = ON')
+        cur.execute(
+            'SELECT episode.id, season.id FROM '
+            '    season '
+            '    INNER JOIN episode ON episode.season_id = season.id '
+            ' WHERE season.slug=:season_slug AND episode.slug=:episode_slug',
+            { 'season_slug': season, 'episode_slug': episode })
+        res = cur.fetchone()
+        cur.execute('PRAGMA full_column_names = OFF')
+        if res is None:
+            abort(404, 'episode not found')
+        return f(season_id=res['season.id'], episode_id=res['episode.id'], **kwargs)
+    return decorator
 
 
 def populate(library_data):

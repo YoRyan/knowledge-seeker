@@ -1,9 +1,11 @@
-import flask
 import re
 from datetime import datetime, timedelta
 from functools import wraps
 from time import mktime
+
+import flask
 from wsgiref.handlers import format_date_time
+
 
 class Timecode(timedelta):
     def __str__(self):
@@ -68,20 +70,6 @@ def match_season(f):
             flask.abort(404, 'season \'%s\' not found' % slug)
         kwargs.pop('season')
         return f(season=season, **kwargs)
-    return decorator
-
-def match_season_episode(f):
-    @wraps(f)
-    @match_season
-    def decorator(**kwargs):
-        season = kwargs['season']
-        episode_slug = kwargs['episode']
-        episode = next((episode for episode in season.episodes
-                        if episode.slug == episode_slug), None)
-        if episode is None:
-            flask.abort(404, 'episode \'%s\' not found' % episode_slug)
-        kwargs.pop('episode')
-        return f(episode=episode, **kwargs)
     return decorator
 
 def episode_has_subtitles(f):

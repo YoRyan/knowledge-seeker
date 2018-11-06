@@ -6,30 +6,30 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from knowledgeseeker.database import get_db
+from knowledgeseeker.database import get_db, match_episode
 from knowledgeseeker.utils import set_expires
 
 
 bp = flask.Blueprint('clips', __name__)
 
-
 TEXT_VMARGIN = 0.1
 TEXT_SPACING = 4
+JPEG_QUALITY = 85
+
 
 @bp.route('/<season>/<episode>/<int:ms>/pic')
 @set_expires
-def snapshot(season, episode, ms):
+@match_episode
+def snapshot(season_id, episode_id, ms):
     # Load PNG from database.
     cur = get_db().cursor()
     cur.execute(
-        'SELECT snapshot.png FROM '
-        '       season '
-        '       INNER JOIN episode  ON episode.season_id = season.id '
-        '       INNER JOIN snapshot ON snapshot.episode_id = episode.id '
-        ' WHERE snapshot.ms=:ms', { 'ms': ms })
+        'SELECT png FROM snapshot'
+        ' WHERE episode_id=:episode_id AND ms=:ms',
+        { 'episode_id': episode_id, 'ms': ms })
     res = cur.fetchone()
     if res is None:
-        flask.abort(404)
+        flask.abort(404, 'time not found')
     image = Image.open(io.BytesIO(res['png']))
 
     # Draw text if requested.
@@ -40,22 +40,21 @@ def snapshot(season, episode, ms):
 
     # Return as compressed JPEG.
     res = io.BytesIO()
-    image.save(res, 'jpeg', quality=85)
+    image.save(res, 'jpeg', quality=JPEG_QUALITY)
     return flask.Response(res.getvalue(), mimetype='image/jpeg')
 
 @bp.route('/<season>/<episode>/<int:ms>/pic/tiny')
 @set_expires
-def snapshot_tiny(season, episode, ms):
+@match_episode
+def snapshot_tiny(season_id, episode_id, ms):
     cur = get_db().cursor()
     cur.execute(
-        'SELECT snapshot_tiny.jpeg FROM '
-        '       season '
-        '       INNER JOIN episode       ON episode.season_id = season.id '
-        '       INNER JOIN snapshot_tiny ON snapshot_tiny.episode_id = episode.id '
-        ' WHERE snapshot_tiny.ms=:ms', { 'ms': ms })
+        'SELECT jpeg FROM snapshot_tiny '
+        ' WHERE episode_id=:episode_id AND ms=:ms',
+        { 'episode_id': episode_id, 'ms': ms })
     res = cur.fetchone()
     if res is None:
-        flask.abort(404)
+        flask.abort(404, 'time not found')
     return flask.Response(res['jpeg'], mimetype='image/jpeg')
 
 
