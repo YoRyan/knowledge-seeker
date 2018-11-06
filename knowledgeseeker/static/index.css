@@ -40,6 +40,11 @@ form .help {
         font-size: 90%;
 }
 
+#seasons {
+        text-transform: lowercase;
+        font-size: 90%;
+}
+
 #meta {
         position: absolute;
         right: 0;

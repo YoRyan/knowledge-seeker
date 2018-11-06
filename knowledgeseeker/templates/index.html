@@ -20,6 +20,14 @@
         <p class="help">(try: "my honor")</p>
 </form>
 
+<p id="seasons">
+        <a href="{{ url_for('webui.browse_season', season=seasons[0]['slug']) }}">{{ seasons[0]['name'] }}</a>
+{% for season in seasons[1:] %}
+        |
+        <a href="{{ url_for('webui.browse_season', season=season['slug']) }}">{{ season['name'] }}</a>
+{% endfor %}
+</p>
+
 <p id="meta">
         <a href="{{ url_for('webui.about') }}">about me</a>
 </p>

@@ -18,12 +18,14 @@ N_SEARCH_RESULTS = 50
 
 @bp.route('/')
 def index():
-        return flask.render_template('index.html')
+    cur = get_db().cursor()
+    cur.execute('SELECT slug, name FROM season')
+    return flask.render_template('index.html', seasons=cur.fetchall())
 
 
 @bp.route('/about')
 def about():
-        return flask.render_template('about.html')
+    return flask.render_template('about.html')
 
 
 @bp.route('/<season>/')
