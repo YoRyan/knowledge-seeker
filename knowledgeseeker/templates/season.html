@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='season.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='table-listing.css') }}">
 {% endblock %}
 
 {% block title %}{{ season_name }}{% endblock %}
@@ -16,21 +16,31 @@
 {% endblock %}
 
 {% block content %}
-<section class="season-standalone">
+<section>
+<table>
+<tbody>
 {% for row in episodes %}
+<tr class="episode">
 {% set slug_kwargs = { 'season': season, 'episode': row['slug'] } %}
-        <a class="episode"
-           href="{{ url_for('webui.browse_episode', **slug_kwargs) }}">
+	<td>
 {% if row['snapshot_ms'] is not none %}
-                <span class="image-timecode-wrap">
+                <a class="image-timecode-wrap"
+                   href="{{ url_for('webui.browse_episode', **slug_kwargs) }}">
                         <img class="image"
                              src="{{ url_for('clips.snapshot_tiny', ms=row['snapshot_ms'], **slug_kwargs) }}"
                              alt="{{ row['name'] }}">
                         <span class="timecode episode-length">{{ str_ms(row['duration']) }}</span>
-                </span>
+                </a>
 {% endif %}
-                <span class="episode-name">{{ row['name'] }}</span>
-        </a>
+        </td>
+        <td class="episode-name">
+                <a href="{{ url_for('webui.browse_episode', **slug_kwargs) }}">
+                        {{ row['name'] }}
+                </a>
+        </td>
+</tr>
 {% endfor %}
+</tbody>
+</table>
 </section>
 {% endblock %}

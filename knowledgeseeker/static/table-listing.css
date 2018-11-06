@@ -1,0 +1,27 @@
+section > table {
+        border-spacing: 0 1rem;
+}
+
+.subtitle *,
+.episode * {
+        text-decoration: none;
+        vertical-align: middle;
+}
+.subtitle-text,
+.episode-name {
+        padding-left: 1rem;
+}
+.subtitle-text {
+        font-size: 110%;
+}
+.episode-name {
+        font-size: 150%;
+}
+
+.image-timecode-wrap {
+        height: 4rem;
+}
+.image-timecode-wrap > .timecode {
+        font-size: 80%;
+}
+

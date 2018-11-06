@@ -3,7 +3,7 @@
 {% set slug_kwargs = { 'season': season, 'episode': episode } %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='episode.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='table-listing.css') }}">
 {% endblock %}
 
 {% block title %}
@@ -26,12 +26,12 @@
 <table>
 <tbody>
 {% for row in subtitles %}
-<tr class='subtitle">
+<tr class="subtitle">
 {% if row['snapshot_ms'] is not none %}
         {% set start = str_ms(row['start_ms']) %}
         {% set end = str_ms(row['end_ms']) %}
         <td>
-                <a class="subtitle image-timecode-wrap"
+                <a class="image-timecode-wrap"
                    href="{{ url_for('webui.browse_moment', ms=row['snapshot_ms'], **slug_kwargs) }}">
                         <img class="image"
                              src="{{ url_for('clips.snapshot_tiny', ms=row['snapshot_ms'], **slug_kwargs) }}"
@@ -44,8 +44,7 @@
                 </a>
         </td>
         <td class="subtitle-text">
-                <a class="subtitle"
-                   href="{{ url_for('webui.browse_moment', ms=row['snapshot_ms'], **slug_kwargs) }}">
+                <a href="{{ url_for('webui.browse_moment', ms=row['snapshot_ms'], **slug_kwargs) }}">
                         {{ row['content']|safe }}
                 </a>
         </td>
