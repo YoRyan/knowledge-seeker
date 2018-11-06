@@ -99,8 +99,8 @@ def populate(library_data):
                   'video_path': str(episode.video_path),
                   'subtitles_path': str(episode.subtitles_path),
                   'season_id': season_key })
-            episode_key += 1
             episodes[episode_key] = episode
+            episode_key += 1
         season_key += 1
     db.commit()
 
