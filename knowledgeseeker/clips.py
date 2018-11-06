@@ -33,8 +33,10 @@ def snapshot(season_id, episode_id, ms):
     image = Image.open(io.BytesIO(res['png']))
 
     # Draw text if requested.
-    top_text = b64decode(flask.request.args.get('topb64', '')).decode('ascii')
-    bottom_text = b64decode(flask.request.args.get('btmb64', '')).decode('ascii')
+    top_text = (b64decode(flask.request.args.get('topb64', ''))
+        .decode('ascii', 'ignore'))
+    bottom_text = (b64decode(flask.request.args.get('btmb64', ''))
+        .decode('ascii', 'ignore'))
     if top_text != '' or bottom_text != '':
         drawtext(image, top_text, bottom_text)
 
