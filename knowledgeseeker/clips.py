@@ -64,13 +64,13 @@ def snapshot_tiny(season_id, episode_id, ms):
 
 
 def drawtext(image, top_text, bottom_text):
-    MAX_WIDTH = flask.current_app.config.get('SUBTITLES_FONT_MAXWIDTH')
+    MAX_WIDTH = flask.current_app.config.get('PIL_MAXWIDTH')
     MAX_LENGTH = MAX_WIDTH*2
 
-    font_path = flask.current_app.config.get('SUBTITLES_FONT', None)
+    font_path = flask.current_app.config.get('PIL_FONT', None)
     font = (ImageFont.truetype(
-            font=font_path,
-            size=flask.current_app.config.get('SUBTITLES_FONT_SIZE'))
+            font=str(font_path),
+            size=flask.current_app.config.get('PIL_FONT_SIZE'))
         if font_path is not None else None)
     draw = ImageDraw.Draw(image)
     def wrap(t):
@@ -99,7 +99,7 @@ def drawtext(image, top_text, bottom_text):
 def gif(season_id, episode_id, ms1, ms2):
     # Check for valid time range.
     if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
-                      flask.current_app.config['MAX_GIF_LENGTH']):
+                      flask.current_app.config.get('MAX_GIF_LENGTH')):
         flask.abort(400, 'bad time range')
 
     # Get file path and check video bounds.
@@ -112,19 +112,31 @@ def gif(season_id, episode_id, ms1, ms2):
         flask.abort(416, 'bad time range')
     video_path = res['video_path']
 
+    return flask.Response(ff.make_gif(video_path, ms1, ms2), mimetype='image/gif')
+
+
+@bp.route('/<season>/<episode>/<int:ms1>/<int:ms2>/gif/sub')
+@set_expires
+@match_episode
+def gif_with_subtitles(season_id, episode_id, ms1, ms2):
+    # Check for valid time range.
+    if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
+                      flask.current_app.config.get('MAX_GIF_LENGTH')):
+        flask.abort(400, 'bad time range')
+
+    # Get file path and check video bounds.
+    cur = get_db().cursor()
+    cur.execute(
+        'SELECT video_path, subtitles_path, duration '
+        '       FROM episode WHERE id=:episode_id',
+        { 'episode_id': episode_id })
+    res = cur.fetchone()
+    if ms1 < 0 or ms2 > res['duration']:
+        flask.abort(416, 'bad time range')
+    video_path = res['video_path']
+    subtitles_path = res['subtitles_path']
+
     return flask.Response(
-        ff.make_gif(video_path, ms1, ms2,
-                    vres=flask.current_app.config['GIF_VRES']),
+        ff.make_gif_with_subtitles(video_path, subtitles_path, ms1, ms2),
         mimetype='image/gif')
-
-
-def call_with_fonts(callee, *args, **kwargs):
-    app_config = flask.current_app.config
-    if 'SUBTITLES_FONT' in app_config:
-        if 'SUBTITLES_FONTSDIR' in app_config:
-            kwargs['fonts_path'] = Path(app_config['SUBTITLES_FONTSDIR'])
-            kwargs['font'] = app_config['SUBTITLES_FONT']
-        else:
-            kwargs['font'] = app_config['SUBTITLES_FONT']
-    return callee(*args, **kwargs)
 
