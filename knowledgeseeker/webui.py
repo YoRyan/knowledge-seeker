@@ -178,6 +178,8 @@ def search():
     query = unquote(query)
     query = re.sub(r'[^a-zA-Z0-9 \']', '', query)
     query = query[0:MAX_SEARCH_LENGTH]
+    if query == '':
+        return flask.render_template('search.html', query='')
 
     cur = get_db().cursor()
     cur.execute('PRAGMA full_column_names = ON')
