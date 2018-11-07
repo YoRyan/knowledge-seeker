@@ -98,14 +98,17 @@ def make_gif_with_subtitles(video_path, subtitle_path, start_ms, end_ms):
     return ffmpeg_run_stdout(gstream)
 
 
-def make_webm(video_path, start_time, end_time, vres=360):
-    duration = end_time - start_time
-    stream = ffmpeg.input(video_path,
-                          ss=start_time)
+def make_webm(video_path, start_ms, end_ms):
+    start_s = str(start_ms/1000)
+    end_s = str(end_ms/1000)
+    duration = str((end_ms - start_ms)/1000)
+    vres=current_app.config.get('WEBM_VRES')
+
+    stream = ffmpeg.input(video_path, ss=start_s)
     stream = ffmpeg.filter_(stream, 'scale', -1, vres)
     stream = ffmpeg.output(stream, 'pipe:1',
                            **{ 'format': 'webm',
-                               't': duration.total_seconds(),
+                               't': duration,
                                'an': None,
                                'sn': None,
                                'c:v': 'libvpx-vp9',
@@ -116,17 +119,18 @@ def make_webm(video_path, start_time, end_time, vres=360):
     return ffmpeg_run_stdout(stream)
 
 
-def make_webm_with_subtitles(video_path, subtitle_path, start_time, end_time,
-                             vres=360, fonts_path=None, font=None):
-    duration = end_time - start_time
-    stream = ffmpeg.input(video_path,
-                          ss=start_time)
+def make_webm_with_subtitles(video_path, subtitle_path, start_ms, end_ms):
+    start_s = str(start_ms/1000)
+    end_s = str(end_ms/1000)
+    duration = str((end_ms - start_ms)/1000)
+    vres=current_app.config.get('WEBM_VRES')
+
+    stream = ffmpeg.input(video_path, ss=start_s)
     stream = ffmpeg.filter_(stream, 'scale', -1, vres)
-    stream = ffmpeg_subtitles_filter(stream, subtitle_path, start_time,
-                                     fonts_path=fonts_path, font=font)
+    stream = ffmpeg_subtitles_filter(stream, subtitle_path, start_ms)
     stream = ffmpeg.output(stream, 'pipe:1',
                            **{ 'format': 'webm',
-                               't': duration.total_seconds(),
+                               't': duration,
                                'an': None,
                                'sn': None,
                                'c:v': 'libvpx-vp9',
