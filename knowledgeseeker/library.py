@@ -45,7 +45,7 @@ class Episode(object):
 
 
 def load_library_file(library_path):
-    with open(str(library_path), 'rt') as f:
+    with open(library_path, 'rt') as f:
         js_data = json.load(f)
     return [read_season_json(season_data, relative_to=library_path.parent)
             for season_data in js_data]
@@ -90,6 +90,6 @@ def read_library_command():
         db.cursor().executescript(f.read())
     db.commit()
 
-    library_data = load_library_file(Path(current_app.config['LIBRARY']))
+    library_data = load_library_file(Path(current_app.config.get('LIBRARY')))
     database.populate(library_data)
 
