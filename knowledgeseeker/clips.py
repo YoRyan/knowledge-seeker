@@ -2,10 +2,12 @@ import flask
 import io
 import textwrap as tw
 from base64 import b64decode
+from datetime import timedelta
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+import knowledgeseeker.ffmpeg as ff
 from knowledgeseeker.database import get_db, match_episode
 from knowledgeseeker.utils import set_expires
 
@@ -44,6 +46,7 @@ def snapshot(season_id, episode_id, ms):
     res = io.BytesIO()
     image.save(res, 'jpeg', quality=JPEG_QUALITY)
     return flask.Response(res.getvalue(), mimetype='image/jpeg')
+
 
 @bp.route('/<season>/<episode>/<int:ms>/pic/tiny')
 @set_expires
@@ -87,6 +90,32 @@ def drawtext(image, top_text, bottom_text):
                image.height - round(TEXT_VMARGIN*image.height) - size[1])
         draw.multiline_text(pos, text, font=font,
                             spacing=TEXT_SPACING, align='center')
+
+
+
+@bp.route('/<season>/<episode>/<int:ms1>/<int:ms2>/gif')
+@set_expires
+@match_episode
+def gif(season_id, episode_id, ms1, ms2):
+    # Check for valid time range.
+    if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
+                      flask.current_app.config['MAX_GIF_LENGTH']):
+        flask.abort(400, 'bad time range')
+
+    # Get file path and check video bounds.
+    cur = get_db().cursor()
+    cur.execute(
+        'SELECT video_path, duration FROM episode WHERE id=:episode_id',
+        { 'episode_id': episode_id })
+    res = cur.fetchone()
+    if ms1 < 0 or ms2 > res['duration']:
+        flask.abort(416, 'bad time range')
+    video_path = res['video_path']
+
+    return flask.Response(
+        ff.make_gif(video_path, ms1, ms2,
+                    vres=flask.current_app.config['GIF_VRES']),
+        mimetype='image/gif')
 
 
 def call_with_fonts(callee, *args, **kwargs):
