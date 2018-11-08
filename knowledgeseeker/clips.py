@@ -96,19 +96,14 @@ def drawtext(image, top_text, bottom_text):
 @set_expires
 @match_episode
 def gif(season_id, episode_id, ms1, ms2):
-    # Check for valid time range.
-    if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
-                      flask.current_app.config.get('MAX_GIF_LENGTH')):
+    if not check_range(episode_id, ms1, ms2,
+                       flask.current_app.config.get('MAX_GIF_LENGTH')):
         flask.abort(400, 'bad time range')
 
-    # Get file path and check video bounds.
     cur = get_db().cursor()
-    cur.execute(
-        'SELECT video_path, duration FROM episode WHERE id=:episode_id',
-        { 'episode_id': episode_id })
+    cur.execute('SELECT video_path FROM episode WHERE id=:episode_id',
+                { 'episode_id': episode_id })
     res = cur.fetchone()
-    if ms1 < 0 or ms2 > res['duration']:
-        flask.abort(416, 'bad time range')
     video_path = res['video_path']
 
     return flask.Response(ff.make_gif(video_path, ms1, ms2), mimetype='image/gif')
@@ -118,20 +113,15 @@ def gif(season_id, episode_id, ms1, ms2):
 @set_expires
 @match_episode
 def gif_with_subtitles(season_id, episode_id, ms1, ms2):
-    # Check for valid time range.
-    if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
-                      flask.current_app.config.get('MAX_GIF_LENGTH')):
+    if not check_range(episode_id, ms1, ms2,
+                       flask.current_app.config.get('MAX_GIF_LENGTH')):
         flask.abort(400, 'bad time range')
 
-    # Get file path and check video bounds.
     cur = get_db().cursor()
     cur.execute(
-        'SELECT video_path, subtitles_path, duration '
-        '       FROM episode WHERE id=:episode_id',
+        'SELECT video_path, subtitles_path FROM episode WHERE id=:episode_id',
         { 'episode_id': episode_id })
     res = cur.fetchone()
-    if ms1 < 0 or ms2 > res['duration']:
-        flask.abort(416, 'bad time range')
     video_path = res['video_path']
     subtitles_path = res['subtitles_path']
 
@@ -144,19 +134,14 @@ def gif_with_subtitles(season_id, episode_id, ms1, ms2):
 @set_expires
 @match_episode
 def webm(season_id, episode_id, ms1, ms2):
-    # Check for valid time range.
-    if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
-                      flask.current_app.config.get('MAX_GIF_LENGTH')):
+    if not check_range(episode_id, ms1, ms2,
+                       flask.current_app.config.get('MAX_WEBM_LENGTH')):
         flask.abort(400, 'bad time range')
 
-    # Get file path and check video bounds.
     cur = get_db().cursor()
-    cur.execute(
-        'SELECT video_path, duration FROM episode WHERE id=:episode_id',
-        { 'episode_id': episode_id })
+    cur.execute('SELECT video_path FROM episode WHERE id=:episode_id',
+                { 'episode_id': episode_id })
     res = cur.fetchone()
-    if ms1 < 0 or ms2 > res['duration']:
-        flask.abort(416, 'bad time range')
     video_path = res['video_path']
 
     return flask.Response(ff.make_webm(video_path, ms1, ms2), mimetype='video/webm')
@@ -166,24 +151,38 @@ def webm(season_id, episode_id, ms1, ms2):
 @set_expires
 @match_episode
 def webm_with_subtitles(season_id, episode_id, ms1, ms2):
-    # Check for valid time range.
-    if ms1 >= ms2 or (timedelta(milliseconds=(ms2 - ms1)) >
-                      flask.current_app.config.get('MAX_GIF_LENGTH')):
+    if not check_range(episode_id, ms1, ms2,
+                       flask.current_app.config.get('MAX_WEBM_LENGTH')):
         flask.abort(400, 'bad time range')
 
-    # Get file path and check video bounds.
     cur = get_db().cursor()
     cur.execute(
-        'SELECT video_path, subtitles_path, duration '
-        '       FROM episode WHERE id=:episode_id',
+        'SELECT video_path, subtitles_path FROM episode WHERE id=:episode_id',
         { 'episode_id': episode_id })
     res = cur.fetchone()
-    if ms1 < 0 or ms2 > res['duration']:
-        flask.abort(416, 'bad time range')
     video_path = res['video_path']
     subtitles_path = res['subtitles_path']
 
     return flask.Response(
         ff.make_webm_with_subtitles(video_path, subtitles_path, ms1, ms2),
         mimetype='video/webm')
+
+
+def check_range(episode_id, ms1, ms2, max_length):
+    if ms1 >= ms2 or ms1 < 0 or ms2 - ms1 > max_length.total_seconds()*1000:
+        return False
+    else:
+        cur = get_db().cursor()
+        cur.execute('SELECT duration FROM episode WHERE id=:episode_id',
+                    { 'episode_id': episode_id })
+        res = cur.fetchone()
+        return (ms2 <= res['duration']
+                and check_time(episode_id, ms1) and check_time(episode_id, ms2))
+
+
+def check_time(episode_id, ms):
+    cur = get_db().cursor()
+    cur.execute('SELECT ms FROM snapshot WHERE episode_id=:episode_id AND ms=:ms',
+                { 'episode_id': episode_id, 'ms': ms })
+    return cur.fetchone() is not None
 
