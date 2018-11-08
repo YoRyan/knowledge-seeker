@@ -191,7 +191,8 @@ def search():
         'INNER JOIN (SELECT episode_id, snapshot_ms, content FROM subtitle_search '
         '             WHERE content MATCH :query LIMIT :n_results) search '
         '           ON search.episode_id = episode.id',
-        { 'query': query, 'n_results': N_SEARCH_RESULTS })
+        { 'query': ' '.join('"%s"' % term for term in query.split()),
+          'n_results': N_SEARCH_RESULTS })
     results = cur.fetchall()
     return flask.render_template('search.html', query=query, results=results,
                                  n_results=len(results))
