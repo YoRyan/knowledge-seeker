@@ -8,7 +8,7 @@ import cv2
 import numpy
 from flask import abort, current_app, g
 
-from knowledgeseeker.utils import dt_milliseconds, strip_html
+from knowledgeseeker.utils import strip_html
 
 
 FILENAME = 'data.db'
@@ -95,7 +95,7 @@ def populate(library_data):
                 { 'id': episode_key,
                   'slug': episode.slug,
                   'name': episode.name,
-                  'duration': episode.duration.milliseconds,
+                  'duration': 0,
                   'video_path': str(episode.video_path),
                   'subtitles_path': str(episode.subtitles_path),
                   'season_id': season_key })
@@ -154,6 +154,10 @@ def populate_episode(episode, key, cur, full_vres=720, tiny_vres=100):
         frames += 1
         success, image = vidcap.read()
 
+    # Set the episode's duration.
+    cur.execute('UPDATE episode SET duration=:ms WHERE id=:id',
+                { 'id': key, 'ms': ms })
+
     # Set the episode's preview frame.
     cur.execute(
         '  SELECT ms FROM snapshot '
@@ -209,8 +213,8 @@ class FrameClassifier(object):
 
 def populate_subtitles(episode, key, cur):
     for sub in episode.subtitles:
-        start_ms = dt_milliseconds(sub.start)
-        end_ms = dt_milliseconds(sub.end)
+        start_ms = sub.start.total_seconds()*1000
+        end_ms = sub.end.total_seconds()*1000
         cur.execute(
             'SELECT ms FROM snapshot '
             '       WHERE episode_id=:episode_id '

@@ -38,10 +38,6 @@ class Episode(object):
             with open(subtitles_path) as f:
                 self.subtitles = list(parse_srt(f.read()))
                 self.subtitles.sort(key=lambda s: s.index)
-        try:
-            self.duration = ff.video_duration(video_path)
-        except ff.FfprobeRuntimeError:
-            raise LoadError('failed to read video file: %s' % video_path)
 
 
 def load_library_file(library_path):

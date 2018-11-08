@@ -1,11 +1,12 @@
 import re
+from datetime import timedelta
 from urllib.parse import unquote
 
 import flask
 from base64 import b64encode
 
 from knowledgeseeker.database import get_db, match_episode, match_season
-from knowledgeseeker.utils import Timecode, set_expires, strip_html
+from knowledgeseeker.utils import set_expires, strftimecode, strip_html
 
 
 bp = flask.Blueprint('webui', __name__)
@@ -50,7 +51,7 @@ def browse_season(season_id):
     targs['episodes'] = cur.fetchall()
 
     def str_ms(ms):
-        return Timecode(milliseconds=ms).str_seconds()
+        return strftimecode(timedelta(milliseconds=ms))
     targs['str_ms'] = str_ms
     return flask.render_template('season.html', **targs)
 
@@ -107,7 +108,7 @@ def browse_episode(season_id, episode_id):
     targs['subtitles'] = res
 
     def str_ms(ms):
-        return Timecode(milliseconds=ms).str_seconds()
+        return strftimecode(timedelta(milliseconds=ms))
     targs['str_ms'] = str_ms
     return flask.render_template('episode.html', **targs)
 

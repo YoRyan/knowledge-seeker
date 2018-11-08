@@ -3,8 +3,6 @@ import subprocess
 import ffmpeg
 from flask import current_app
 
-from knowledgeseeker.utils import Timecode
-
 
 class FfmpegRuntimeError(Exception):
     pass
@@ -139,19 +137,6 @@ def make_webm_with_subtitles(video_path, subtitle_path, start_ms, end_ms):
                                'cpu-used': 2,
                                'threads': 1 })
     return ffmpeg_run_stdout(stream)
-
-
-def video_duration(video_path):
-    # https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
-    args = ['-v', 'error', '-show_entries', 'format=duration', '-of',
-            'default=noprint_wrappers=1:nokey=1', '-sexagesimal', str(video_path)]
-    process = subprocess.run([current_app.config.get('FFPROBE_PATH')] + args,
-                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    if process.returncode == 0:
-        duration = process.stdout.decode('ascii').strip()
-        return Timecode.strftimecode(duration)
-    else:
-        raise FfprobeRuntimeError
 
 
 def ffmpeg_subtitles_filter(stream, subtitle_path, start_ms):
