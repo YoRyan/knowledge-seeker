@@ -8,6 +8,8 @@ def create_app(test_config=None):
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile('config.py')
     app.config['DEV'] = 'FLASK_ENV' in environ and environ['FLASK_ENV'] == 'development'
+    for key in ['LIBRARY', 'PIL_FONT', 'FF_FONT_DIR']:
+        app.config[key] = Path(app.instance_path)/app.config[key]
 
     try:
         makedirs(app.instance_path)
