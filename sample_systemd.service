@@ -1,0 +1,13 @@
+[Unit]
+Description=Knowledge Seeker FastCGI
+Before=nginx.service
+
+[Service]
+User=www-data
+Group=www-data
+ExecStart=/path/to/sample_runner.fcgi
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
