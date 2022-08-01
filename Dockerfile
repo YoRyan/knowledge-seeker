@@ -1,11 +1,11 @@
 # first stage
 FROM python:3 as builder
-WORKDIR /code
-COPY . .
 # Add a proper server for production.
 RUN pip install --user --no-cache-dir waitress
 # Build the app.
-RUN pip install --user --no-cache-dir --use-feature=in-tree-build --no-warn-script-location .
+WORKDIR /code
+COPY . .
+RUN pip install --user --no-cache-dir --no-warn-script-location .
 
 # second stage
 FROM python:3-slim
