@@ -5,7 +5,7 @@ from base64 import b64decode
 from datetime import timedelta
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 
 import knowledgeseeker.ffmpeg as ff
 from knowledgeseeker.database import get_db, match_episode
@@ -80,6 +80,16 @@ def drawtext(image, top_text, bottom_text):
         text = wrap(top_text[:MAX_LENGTH])
         size = draw.multiline_textsize(text, font=font, spacing=TEXT_SPACING)
         pos = (round(image.width/2 - size[0]/2), round(TEXT_VMARGIN*image.height))
+
+        blurred = Image.new('RGBA', image.size)
+        blurredDraw = ImageDraw.Draw(blurred)
+        blurredDraw.multiline_text(pos, text, fill='black', font=font,
+                                   spacing=TEXT_SPACING, align='center')
+        blurred = blurred.filter(ImageFilter.BoxBlur(7))
+
+        # Paste soft text onto background
+        image.paste(blurred,blurred)
+
         draw.multiline_text(pos, text, font=font,
                             spacing=TEXT_SPACING, align='center')
 
@@ -88,6 +98,16 @@ def drawtext(image, top_text, bottom_text):
         size = draw.multiline_textsize(text, font=font, spacing=TEXT_SPACING)
         pos = (round(image.width/2 - size[0]/2),
                image.height - round(TEXT_VMARGIN*image.height) - size[1])
+
+        blurred = Image.new('RGBA', image.size)
+        blurredDraw = ImageDraw.Draw(blurred)
+        blurredDraw.multiline_text(pos, text, fill='black', font=font,
+                                   spacing=TEXT_SPACING, align='center')
+        blurred = blurred.filter(ImageFilter.BoxBlur(7))
+
+        # Paste soft text onto background
+        image.paste(blurred,blurred)
+
         draw.multiline_text(pos, text, font=font,
                             spacing=TEXT_SPACING, align='center')
 
