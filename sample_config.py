@@ -12,7 +12,7 @@ LIBRARY = Path('library/atla.json')
 JPEG_VRES = 720
 JPEG_TINY_VRES = 100
 # Path to a font acceptable to Pillow.
-PIL_FONT = Path('library/fonts/Herculanum.wolff')
+PIL_FONT = Path('library/Avatar The Last Airbender/knowledgeseeker/fonts/Herculanum.woff')
 PIL_FONT_SIZE = 60
 PIL_MAXWIDTH = 30
 
@@ -26,7 +26,7 @@ WEBM_VRES = 480
 MAX_GIF_LENGTH = timedelta(seconds=10)
 MAX_WEBM_LENGTH = timedelta(seconds=15)
 # Ffmpeg requires a path to the directory containing your desired font...
-FF_FONT_DIR = Path('library/fonts/')
+FF_FONT_DIR = Path('library/Avatar The Last Airbender/knowledgeseeker/fonts/')
 # ...and its filename, without the extension.
 FF_FONT_NAME = 'Herculanum'
 FF_FONT_SIZE = 24
