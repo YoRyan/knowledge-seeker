@@ -137,7 +137,7 @@ def populate_episode(episode, key, cur, full_vres=720, tiny_vres=100):
                 interpolation=cv2.INTER_AREA)
             big_png = cv2.imencode('.png', big_image)[1].tostring()
             cur.execute(
-                'INSERT INTO snapshot (episode_id, ms, png) '
+                'INSERT OR IGNORE INTO snapshot (episode_id, ms, png) '
                 '       VALUES (:episode_id, :ms, :png)',
                 { 'episode_id': key, 'ms': ms, 'png': sqlite3.Binary(big_png) })
 
@@ -148,7 +148,7 @@ def populate_episode(episode, key, cur, full_vres=720, tiny_vres=100):
                 interpolation=cv2.INTER_AREA)
             tiny_jpg = cv2.imencode('.jpg', tiny_image)[1].tostring()
             cur.execute(
-                'INSERT INTO snapshot_tiny (episode_id, ms, jpeg) '
+                'INSERT OR IGNORE INTO snapshot_tiny (episode_id, ms, jpeg) '
                 '       VALUES (:episode_id, :ms, :jpeg)',
                 { 'episode_id': key, 'ms': ms, 'jpeg': sqlite3.Binary(tiny_jpg) })
         frames += 1
