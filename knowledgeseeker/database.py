@@ -2,6 +2,7 @@ import sqlite3
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from datetime import datetime
 from functools import wraps
+from os import cpu_count
 from pathlib import Path
 
 import cv2
@@ -12,7 +13,7 @@ from knowledgeseeker.utils import strip_html
 
 
 FILENAME = 'data.db'
-POPULATE_WORKERS = 4
+POPULATE_WORKERS = cpu_count()
 
 
 def get_db():
