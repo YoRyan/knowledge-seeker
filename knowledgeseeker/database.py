@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from datetime import datetime
@@ -12,7 +13,7 @@ from knowledgeseeker.utils import strip_html
 
 
 FILENAME = 'data.db'
-POPULATE_WORKERS = 4
+POPULATE_WORKERS = int(os.environ.get('POPULATE_WORKERS', os.cpu_count()))
 
 
 def get_db():
