@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  knowledgeseeker:
+    image: knowledge-seeker:latest # https://docs.docker.com/compose/compose-file/compose-file-v3/#image
+    # https://github.com/YoRyan/knowledge-seeker
+    configs:
+      - source: knowledgeseeker_config.py
+        target: /home/ks/.local/var/knowledgeseeker-instance/config.py
+      - source: atla.json
+        target: /home/ks/.local/var/knowledgeseeker-instance/library/atla.json
+    volumes: # https://docs.docker.com/compose/compose-file/compose-file-v3/#volumes
+      - "/home/Media/TV/Avatar The Last Airbender:/home/ks/.local/var/knowledgeseeker-instance/library/Avatar The Last Airbender"
+      - "/home/Media/TV/Avatar The Last Airbender/knowledge-seeker/data.db:/home/ks/.local/var/knowledgeseeker-instance/data.db"
+    networks: # https://docs.docker.com/compose/compose-file/compose-file-v3/#networks
+      - traefik
+    deploy: # https://docs.docker.com/compose/compose-file/compose-file-v3/#deploy
+      labels: # https://docs.docker.com/compose/compose-file/compose-file-v3/#labels-1
+        # Essential traefik labels https://doc.traefik.io/traefik/providers/docker/
+        - "traefik.enable=true"
+        - "traefik.http.routers.knowledgeseeker.entrypoints=websecure"
+        - "traefik.http.routers.knowledgeseeker.rule=Host(`knowledgeseeker.exampledomain.net`)"
+        - "traefik.http.services.knowledgeseeker.loadbalancer.server.port=8080" # Port traefik needs to route traffic to
+        # Enable middlewares
+        - "traefik.http.routers.knowledgeseeker.middlewares=default_circuitbreaker@file,default_security_headers@file"
+
+networks:
+  traefik:
+    external: true
+
+configs:
+  knowledgeseeker_config.py:
+    external: true
+  atla.json:
+    external: true
